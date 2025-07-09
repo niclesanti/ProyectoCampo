@@ -10,18 +10,18 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "nombre", nullable = false)
+    @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 50)
     private String email;
     @Column(name = "foto_perfil")
     private String fotoPerfil;
     @Enumerated(EnumType.STRING)
     @Column(name = "proveedor")
     private ProveedorAutenticacion proveedor;
-    @Column(name = "id_proveedor")
+    @Column(name = "id_proveedor", length = 50)
     private String idProveedor;
-    @Column(name = "rol", nullable = false)
+    @Column(name = "rol", nullable = false, length = 50)
     private String rol;
     @Column(name = "activo", nullable = false)
     private Boolean activo;

@@ -8,8 +8,11 @@ public class MotivoTransaccion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "motivo", nullable = false)
+    @Column(name = "motivo", nullable = false, length = 50)
     private String motivo;
+    @ManyToOne
+    @JoinColumn(name = "id_espacio_trabajo", nullable = false)
+    private EspacioTrabajo espacioTrabajo;
 
     public MotivoTransaccion() {}
 
@@ -31,5 +34,13 @@ public class MotivoTransaccion {
 
     public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+
+    public EspacioTrabajo getEspacioTrabajo() {
+        return espacioTrabajo;
+    }
+
+    public void setEspacioTrabajo(EspacioTrabajo espacioTrabajo) {
+        this.espacioTrabajo = espacioTrabajo;
     }
 }

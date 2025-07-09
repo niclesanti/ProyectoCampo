@@ -21,10 +21,10 @@ public class Transaccion {
     @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
 
-    @Column(name = "descripcion")
+    @Column(name = "descripcion", length = 100)
     private String descripcion;
 
-    @Column(name = "nombre_completo_auditoria", nullable = false)
+    @Column(name = "nombre_completo_auditoria", nullable = false, length = 100)
     private String nombreCompletoAuditoria;
 
     @Column(name = "fecha_creacion", nullable = false)

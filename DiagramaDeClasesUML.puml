@@ -62,6 +62,8 @@ Transaccion "0..*" -- "1" MotivoTransaccion : tiene >
 Transaccion "0..*" -- "1" ContactoTransferencia : tiene >
 Presupuesto "0..*" -- "1" EspacioTrabajo : asignado a >
 Presupuesto "0..*" -- "0..1" motivoTransaccion : relacionado con >
+ContactoTransferencia "0..*" -- "1" EspacioTrabajo : pertenece >
+MotivoTransaccion "0..*" -- "1" EspacioTrabajo : pertenece >
 
 'DEFINICION DE GESTORES
 interface IUsuarioService <<service>> {
@@ -76,7 +78,7 @@ class UsuarioServiceImpl <<service>> {
 }
 
 interface ITransaccionesService <<service>> {
-    + nuevaTransaccion(): void
+    + registrarTransaccion(): void
     + removerTransaccion(): void
     + buscarTransaccion(): List<Transaccion>
     + registrarContactoTransferencia(): void
