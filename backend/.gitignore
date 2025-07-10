@@ -1,4 +1,6 @@
 HELP.md
+GEMINI.md
+datos_prueba2.sql
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
