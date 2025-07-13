@@ -29,3 +29,7 @@ replay_pid*
 *.key
 *.pem
 secrets/
+
+# Gemini instrucciones
+GEMINI.md
+GuiaFrontend.md
