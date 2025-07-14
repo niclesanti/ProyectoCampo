@@ -69,7 +69,29 @@
         loadSampleData();
         setupEventListeners();
         updateDashboard();
-        populateYearSelector(); // <-- LLAMADA ÚNICA Y CORRECTA
+        populateYearSelector();
+        loadAuthenticatedUser();
+    }
+
+    function loadAuthenticatedUser() {
+        fetch('/usuario/me')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('No se pudo obtener la información del usuario.');
+            })
+            .then(usuario => {
+                if (usuario) {
+                    document.querySelector('.user-menu__username').textContent = usuario.nombre;
+                    document.querySelector('.user-menu__email').textContent = usuario.email;
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar datos del usuario:', error);
+                // Opcional: redirigir al login si no se pueden obtener los datos
+                // window.location.href = '/login.html';
+            });
     }
 
     function loadSampleData() {
@@ -110,11 +132,7 @@
             toggleUserMenu();
         });
 
-        document.getElementById('logoutConfirmBtn').addEventListener('click', () => {
-            // Aquí iría la lógica real de cierre de sesión
-            showNotification('Has cerrado la sesión.', 'info');
-            toggleUserMenu(false);
-        });
+        
 
         // Botones para cerrar modales
         document.getElementById('closeTransactionModalBtn').addEventListener('click', () => toggleModal('transactionModal', false));
@@ -616,6 +634,32 @@
         selectElement.value = currentYear;
     }
 
-    document.addEventListener('DOMContentLoaded', initializeApp);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('loginForm')) {
+            initializeLoginPage();
+        } else {
+            initializeApp();
+        }
+    });
+
+    function initializeLoginPage() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLoginSubmit);
+        }
+
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        if (googleLoginBtn) {
+            googleLoginBtn.addEventListener('click', () => {
+                showNotification('Función no implementada todavía.', 'info');
+            });
+        }
+    }
+
+    function handleLoginSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        form.submit();
+    }
 
 })();

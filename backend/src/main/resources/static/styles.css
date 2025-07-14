@@ -518,7 +518,14 @@ body {
 
 .btn--full-width {
     width: 100%;
+}
+
+.user-menu__actions .btn--full-width {
     justify-content: flex-start; /* Alinea el texto a la izquierda */
+}
+
+.login-box .btn--full-width {
+    justify-content: center; /* Centra el texto en los botones de login */
 }
 
 /* Selector de Espacio de Trabajo (.workspace-selector) */
@@ -868,6 +875,76 @@ body {
 @keyframes fadeOutNotification {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+
+/* Estilos para la página de login */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-bg-primary);
+}
+
+.login-box {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.login-logo {
+    height: 50px;
+    margin-bottom: 0.75rem;
+}
+
+.login-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+}
+
+.login-divider {
+    text-align: center;
+    margin: 1rem 0;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background-color: var(--color-border);
+}
+
+.login-social .btn {
+    justify-content: center;
+}
+
+.form__group {
+    margin-bottom: 1rem;
+}
+
+.form__actions {
+    margin-top: 1.5rem;
+    justify-content: center;
 }
 
 /* 7. Media Queries (Diseño Responsivo)
