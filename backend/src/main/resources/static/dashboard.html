@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMPITO - Dashboard</title>
+    <meta name="description" content="Dashboard de gestión para CAMPITO.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Encabezado Principal -->
+    <header class="header">
+        <div class="header__content">
+            <div class="header__left-section">
+                <div class="header__logo">
+                    <i class="fas fa-cow header__logo-icon"></i>
+                    <img src="/logo.png" alt="Logo CAMPITO" class="header__logo-img">
+                </div>
+                <nav class="header__nav">
+                    <button class="header__nav-btn">Finanzas</button>
+                    <button class="header__nav-btn">Producción</button>
+                </nav>
+            </div>
+            <div class="header__user-info">
+                <button id="userMenuBtn" class="header__logout-btn" aria-label="Abrir menú de usuario">
+                    <i class="fas fa-user"></i>
+                </button>
+
+                <!-- Menú Desplegable de Usuario -->
+                <div id="userMenu" class="user-menu" hidden>
+                    <div class="user-menu__header">
+                        <span class="user-menu__username">Usuario Ejemplo</span>
+                        <span class="user-menu__email">usuario@ejemplo.com</span>
+                    </div>
+                    <div class="user-menu__actions">
+                        <a href="/logout" class="btn btn--text btn--full-width">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Selector de Espacio de Trabajo -->
+    <section class="workspace-selector">
+        <div class="workspace-selector__container">
+            <select id="workspaceSelect" class="workspace-selector__select">
+                <option value="campo-nuevo">Seleccionar espacio de trabajo</option>
+            </select>
+            <button id="newWorkspaceBtn" class="workspace-selector__btn">
+                <i class="fas fa-plus"></i> Nuevo espacio
+            </button>
+            <button id="shareWorkspaceBtn" class="workspace-selector__btn">
+                <i class="fas fa-share-alt"></i> Compartir espacio
+            </button>
+        </div>
+    </section>
+
+    <main class="dashboard">
+        <!-- Sección de Saldo -->
+        <section class="balance-section" aria-labelledby="balance-title">
+            <div class="card card--balance">
+                <h2 id="balance-title" class="card__title">Saldo actual</h2>
+                <div id="balanceAmount" class="balance__amount">
+                    <span class="balance__currency">$</span>
+                    <span class="balance__value">0</span>
+                </div>
+                <p id="balanceDate" class="balance__date">Actualizando...</p>
+            </div>
+        </section>
+
+        <!-- Acciones Rápidas -->
+        <section class="quick-actions" aria-label="Acciones rápidas">
+            <button id="newTransactionBtn" class="btn btn--primary">
+                <i class="fas fa-plus"></i>
+                Nueva transacción
+            </button>
+            <button id="searchTransactionsBtn" class="btn btn--secondary">
+                <i class="fas fa-search"></i>
+                Buscar transacciones
+            </button>
+            <button id="setupAlertsBtn" class="btn btn--secondary">
+                <i class="fas fa-bell"></i>
+                Configurar alerta
+            </button>
+        </section>
+
+        <!-- Gráficos -->
+        <section class="charts-section" aria-label="Visualización de datos">
+            <div class="card card--chart">
+                <h3 class="card__title">Ingresos vs Gastos mensuales</h3>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+            <div class="card card--chart">
+                <h3 class="card__title">Distribución de gastos</h3>
+                <p class="card__subtitle">Últimos 6 meses</p>
+                <canvas id="expensesChart"></canvas>
+            </div>
+            <div class="card card--chart card--chart-full-width">
+                <h3 class="card__title">Tendencia del saldo acumulado</h3>
+                <canvas id="balanceTrendChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Transacciones Recientes -->
+        <section class="transactions-section" aria-labelledby="transactions-title">
+            <div class="card">
+                <div class="card__header">
+                    <h3 id="transactions-title" class="card__title">Transacciones recientes</h3>
+                    <button id="viewAllTransactionsBtn" class="btn btn--text">
+                        Ver Todas
+                    </button>
+                </div>
+                <div id="recentTransactionsList" class="transactions-list">
+                    <!-- Las transacciones se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Nueva Transacción -->
+    <div id="transactionModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Nueva transacción</h2>
+                <button id="closeTransactionModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="transactionForm" class="form">
+                <div class="form__group">
+                    <label for="transactionType" class="form__label">Tipo</label>
+                    <select id="transactionType" name="transactionType" class="form__select" required>
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Gasto</option>
+                    </select>
+                </div>
+                <div class="form__group">
+                    <label for="transactionDate" class="form__label">Fecha</label>
+                    <input type="date" id="transactionDate" name="transactionDate" class="form__input" required>
+                </div>
+                <div class="form__group">
+                    <label for="amount" class="form__label">Monto ($)</label>
+                    <input type="number" id="amount" name="amount" step="0.01" class="form__input" required>
+                </div>
+                <div class="form__group">
+                    <label for="reason" class="form__label">Motivo</label>
+                    <div class="form__group--horizontal">
+                        <select id="reason" name="reason" class="form__select" required>
+                            <option value="">Seleccionar motivo</option>
+                        </select>
+                        <button type="button" id="newReasonBtn" class="btn btn--secondary btn--small">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
+                    </div>
+                    <div id="newReasonForm" class="form__group--nested" hidden>
+                        <input type="text" id="newReasonInput" placeholder="Ingrese el nuevo motivo" class="form__input">
+                        <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
+                        <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                    </div>
+                </div>
+                <div class="form__group">
+                    <label for="recipient" class="form__label">Contacto emisor/destinatario (opcional)</label>
+                    <div class="form__group--horizontal">
+                        <select id="recipient" name="recipient" class="form__select">
+                            <option value="">Seleccionar contacto</option>
+                        </select>
+                        <button type="button" id="newContactBtn" class="btn btn--secondary btn--small">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
+                    </div>
+                    <div id="newContactForm" class="form__group--nested" hidden>
+                        <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input">
+                        <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
+                        <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                    </div>
+                </div>
+                <div class="form__group">
+                    <label for="description" class="form__label">Descripción (opcional)</label>
+                    <textarea id="description" name="description" rows="3" class="form__textarea"></textarea>
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
+                    <button type="submit" class="btn btn--primary">Guardar transacción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Buscar Transacciones -->
+    <div id="searchModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Buscar transacciones</h2>
+                <button id="closeSearchModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="searchForm" class="form">
+                <div class="form__group--grid">
+                    <div class="form__group">
+                        <label for="searchMonth" class="form__label">Mes</label>
+                        <select id="searchMonth" name="searchMonth" class="form__select">
+                            <option value="">Todos</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="searchYear" class="form__label">Año</label>
+                        <select id="searchYear" name="searchYear" class="form__select">
+                            <option value="">Todos</option>
+                            <!-- Los años se llenarán dinámicamente con JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="searchReason" class="form__label">Motivo</label>
+                        <select id="searchReason" name="searchReason" class="form__select">
+                            <option value="">Seleccionar motivo</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="searchRecipient" class="form__label">Contacto</label>
+                        <select id="searchRecipient" name="searchRecipient" class="form__select">
+                            <option value="">Seleccionar contacto</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="orderBy" class="form__label">Ordenar por</label>
+                        <select id="orderBy" name="orderBy" class="form__select">
+                            <option value="date-desc">Fecha (más recientes)</option>
+                            <option value="date-asc">Fecha (más antiguas)</option>
+                            <option value="amount-desc">Monto (mayor a menor)</option>
+                            <option value="amount-asc">Monto (menor a mayor)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="clearSearchBtn" class="btn btn--secondary">Limpiar</button>
+                    <button type="submit" class="btn btn--primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+            <div id="searchResults" class="search-results">
+                <!-- Los resultados de la búsqueda se mostrarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configurar Alerta de Presupuesto -->
+    <div id="budgetModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Configurar alerta de presupuesto</h2>
+                <button id="closeBudgetModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="budgetForm" class="form">
+                <div class="form__group">
+                    <label for="budgetReason" class="form__label">Motivo</label>
+                    <select id="budgetReason" name="budgetReason" class="form__select" required>
+                        <option value="">Seleccionar motivo</option>
+                    </select>
+                </div>
+                <div class="form__group">
+                    <label for="budgetThreshold" class="form__label">Monto de alerta ($)</label>
+                    <input type="number" id="budgetThreshold" name="budgetThreshold" step="0.01" class="form__input" required>
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="cancelBudgetBtn" class="btn btn--secondary">Cancelar</button>
+                    <button type="submit" class="btn btn--primary">Guardar alerta</button>
+                </div>
+            </form>
+            <div class="alerts-list-container">
+                <h3 class="alerts-list__title">Alertas configuradas</h3>
+                <div id="alertsList" class="alerts-list">
+                    <!-- Las alertas se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nuevo Espacio de Trabajo -->
+    <div id="workspaceModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Nuevo Espacio de Trabajo</h2>
+                <button id="closeWorkspaceModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="workspaceForm" class="form">
+                <div class="form__group">
+                    <label for="workspaceName" class="form__label">Nombre del Espacio</label>
+                    <div class="form__input-container">
+                        <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo Principal" required maxlength="50">
+                        <span id="workspaceNameError" class="form__error-message" hidden>*</span>
+                    </div>
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
+                    <button type="submit" class="btn btn--primary">Guardar Espacio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Compartir Espacio de Trabajo -->
+    <div id="shareModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Compartir Espacio</h2>
+                <button id="closeShareModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="shareForm" class="form">
+                <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
+                <div class="form__group">
+                    <label for="shareWorkspaceSelect" class="form__label">Espacio de Trabajo</label>
+                    <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
+                        <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
+                    </select>
+                </div>
+                <div class="form__group">
+                    <label for="shareEmail" class="form__label">Email del Invitado</label>
+                    <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="ejemplo@email.com" required>
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
+                    <button type="submit" class="btn btn--primary">Enviar Invitación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenedor para Notificaciones -->
+    <div id="notification-container" class="notification-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

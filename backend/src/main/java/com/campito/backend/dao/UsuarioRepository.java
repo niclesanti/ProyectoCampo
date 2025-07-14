@@ -8,4 +8,5 @@ import com.campito.backend.model.ProveedorAutenticacion;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmailAndProveedor(String email, ProveedorAutenticacion proveedor);
+    Optional<Usuario> findByEmail(String email);
 }

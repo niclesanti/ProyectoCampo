@@ -3,6 +3,7 @@ package com.campito.backend.dto;
 import com.campito.backend.model.Usuario;
 
 public record UsuarioDTO(
+    Long id,
     String nombre,
     String email,
     String clave

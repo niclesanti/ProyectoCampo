@@ -1,0 +1,992 @@
+/*------------------------------------------------------------------
+
+  [Master Stylesheet]
+
+  Project:      CAMPITO - Dashboard de Gestión
+  Version:      1.0
+  Author:       Gemini AI
+
+  [Table of Contents]
+
+  1.  Variables & Reset
+  2.  Estilos Base
+  3.  Componentes Reutilizables
+      - Botones (.btn)
+      - Tarjetas (.card)
+      - Formularios (.form)
+      - Modales (.modal)
+  4.  Estructura Principal
+      - Encabezado (.header)
+      - Selector de Espacio de Trabajo (.workspace-selector)
+      - Dashboard (.dashboard)
+  5.  Secciones del Dashboard
+      - Saldo (.balance-section)
+      - Acciones Rápidas (.quick-actions)
+      - Gráficos (.charts-section)
+      - Transacciones (.transactions-section)
+  6.  Componentes Específicos
+      - Lista de Transacciones (.transactions-list)
+      - Resultados de Búsqueda (.search-results)
+      - Lista de Alertas (.alerts-list)
+      - Notificaciones (.notification)
+  7.  Media Queries (Diseño Responsivo)
+
+-------------------------------------------------------------------*/
+
+/* 1. Variables & Reset
+-------------------------------------------------------------------*/
+:root {
+    /* Paleta de Colores Inspirada en una gama de azules */
+    --color-primary-blue: #3B82F6;
+    --color-primary-blue-dark: #03324F;
+    --color-primary-green: #16b156;
+    --color-accent-red: #EF4444;
+    --color-conteiner-saldo: #ffffff;
+
+    /* Colores de Fondo */
+    --color-bg-primary: #F8FAFC;
+    --color-bg-secondary: #FFFFFF;
+
+    /* Colores de Texto */
+    --color-text-primary: #334155;
+    --color-text-secondary: #6B7280;
+    --color-text-light: #FFFFFF;
+    --color-text-saldo-positivo: #005F36;
+    --color-text-saldo-negativo: #730806;
+
+    /* Colores de Borde */
+    --color-border: #E5E7EB;
+    --color-border-focus: #03324F;
+
+    /* Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.12);
+
+    /* Radios de Borde */
+    --border-radius-sm: 6px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+
+    /* Transiciones */
+    --transition-fast: all 0.2s ease-in-out;
+}
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 2. Estilos Base
+-------------------------------------------------------------------*/
+[hidden] {
+    display: none !important;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 3. Componentes Reutilizables
+-------------------------------------------------------------------*/
+
+/* Botones (.btn) */
+.btn {
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: 1px solid transparent;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    min-height: 48px;
+}
+
+.btn--primary {
+    background-color: var(--color-primary-blue);
+    color: var(--color-text-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-primary-blue-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn--secondary {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-primary-blue);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn--secondary:hover {
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-primary-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn--text {
+    background: transparent;
+    color: var(--color-primary-blue);
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.btn--text:hover {
+    background: rgba(58, 111, 70, 0.05);
+}
+
+.btn--small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    min-height: 40px;
+}
+
+/* Tarjetas (.card) */
+.card {
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    transition: var(--transition-fast);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card__title {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.card__subtitle {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Formularios (.form) */
+.form {
+    padding: 2rem;
+}
+
+.form__subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form__group {
+    margin-bottom: 1.5rem;
+}
+
+.form__label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.form__input,
+.form__select,
+.form__textarea {
+    width: 100%;
+    font-size: 1rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border);
+    padding: 0.875rem 1rem;
+    background-color: var(--color-bg-primary);
+    transition: var(--transition-fast);
+    outline: none;
+    font-family: inherit;
+}
+
+.form__input:focus,
+.form__select:focus,
+.form__textarea:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgba(58, 111, 70, 0.1);
+    background-color: var(--color-bg-secondary);
+}
+
+.form__textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form__group--horizontal {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form__group--nested {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background-color: var(--color-bg-primary);
+    border-radius: var(--border-radius-md);
+}
+
+.form__group--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.form__input-container {
+    position: relative;
+}
+
+.form__error-message {
+    color: var(--color-accent-red);
+    font-size: 1.25rem;
+    font-weight: bold;
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Modales (.modal) */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal__content {
+    background: var(--color-bg-secondary);
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 600px;
+    box-shadow: var(--shadow-lg);
+    animation: slideInModal 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes slideInModal {
+    from { 
+        opacity: 0;
+        transform: translateY(-20px) scale(0.98);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.modal__title {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal__close-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-md);
+    transition: var(--transition-fast);
+}
+
+.modal__close-btn:hover {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+/* 4. Estructura Principal
+-------------------------------------------------------------------*/
+
+/* Encabezado (.header) */
+.header {
+    background: var(--color-primary-blue);
+    color: var(--color-text-light);
+    padding: 1rem; /* Reducido el padding horizontal */
+    box-shadow: var(--shadow-md);
+}
+
+.header__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between; /* Mantiene el espacio entre los elementos */
+    align-items: center;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan a la siguiente línea */
+    row-gap: 1rem; /* Espacio vertical cuando los elementos se envuelven */
+}
+
+.header__left-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Mantenemos el gap reducido */
+}
+
+.header__nav {
+    display: flex;
+    gap: 0.5rem; /* Reducido */
+}
+
+.header__nav-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    padding: 0.5rem 0.75rem; /* Pequeño padding para área de clic */
+    border-radius: var(--border-radius-sm);
+}
+
+.header__nav-btn:hover {
+    opacity: 0.8;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header__logo-icon {
+    font-size: 1.5rem;
+}
+
+.header__logo-img {
+    height: 36px;
+}
+
+.header__user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative; /* Clave para posicionar el menú */
+    margin-left: auto; /* Esto empujará este elemento a la derecha */
+}
+
+.header__user-name {
+    font-weight: 500;
+}
+
+.header__logout-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-text-light);
+    width: 40px; /* Aumentado para un mejor clic */
+    height: 40px;
+    border-radius: 50%; /* Círculo perfecto */
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header__logout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Menú Desplegable de Usuario */
+.user-menu {
+    position: absolute;
+    top: calc(100% + 10px); /* Debajo del botón con un pequeño margen */
+    right: 0;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    width: 250px;
+    z-index: 1100;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    animation: fadeInScale 0.2s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.user-menu__header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-primary);
+}
+
+.user-menu__username {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.user-menu__email {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.user-menu__actions {
+    padding: 0.5rem;
+}
+
+.btn--full-width {
+    width: 100%;
+}
+
+.user-menu__actions .btn--full-width {
+    justify-content: flex-start; /* Alinea el texto a la izquierda */
+}
+
+.login-box .btn--full-width {
+    justify-content: center; /* Centra el texto en los botones de login */
+}
+
+/* Selector de Espacio de Trabajo (.workspace-selector) */
+.workspace-selector {
+    padding: 1rem 0; /* Reducido */
+}
+
+.workspace-selector__container {
+    max-width: 1200px; /* Ajustado para coincidir con el contenido principal */
+    margin: 0 auto; /* Centrado */
+    padding: 0 1.5rem; /* Alineado con el padding de otras secciones */
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start; /* Alineación a la izquierda */
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+}
+
+.workspace-selector__select {
+    flex-grow: 0; /* Evita que el select se estire */
+    appearance: none;
+    background: var(--color-bg-secondary) url('data:image/svg+xml;utf8,<svg fill="%23343A40" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/1.2em auto; /* Ajuste de posición */
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border);
+    padding: 0.875rem 2.25rem 0.875rem 1rem; /* Ajuste de padding */
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    transition: var(--transition-fast);
+    min-width: 200px; /* Asegura un tamaño mínimo */
+}
+
+.workspace-selector__select:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgba(58, 111, 70, 0.1);
+}
+
+.workspace-selector__btn {
+    background-color: var(--color-primary-blue);
+    color: var(--color-text-light);
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.workspace-selector__btn:hover {
+    background-color: var(--color-primary-blue-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Dashboard (.dashboard) */
+.dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 1.5rem;
+    display: grid;
+    gap: 1rem; /* Reducido para mayor compacidad */
+}
+
+/* 5. Secciones del Dashboard
+-------------------------------------------------------------------*/
+
+/* Saldo (.balance-section) */
+.card--balance {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background-color: var(--color-conteiner-saldo);
+    color: var(--color-text-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.card--balance::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0; /* Coloca el fondo de puntos detrás */
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="g" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="%23F1F5F9"/></pattern></defs><rect width="100%" height="100%" fill="url(%23g)"/></svg>');
+}
+
+.card--balance > * {
+    position: relative;
+    z-index: 1;
+}
+
+.card--balance .card__title {
+    color: var(--color-text-primary);
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.balance__amount {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    line-height: 1.1;
+    transition: color 0.3s ease;
+}
+
+.balance__amount--positive {
+    color: var(--color-text-saldo-positivo);
+}
+
+.balance__amount--negative {
+    color: var(--color-text-saldo-negativo);
+}
+
+.balance__currency {
+    font-size: 2rem;
+    font-weight: 600;
+    opacity: 0.8;
+    margin-right: 0.25rem;
+}
+
+.balance__date {
+    color: rgba(58, 58, 58, 0.8);
+    font-size: 0.875rem;
+}
+
+/* Acciones Rápidas (.quick-actions) */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; /* Reducido */
+}
+
+/* Gráficos (.charts-section) */
+.charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.card--chart canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+.card--chart-full-width {
+    grid-column: 1 / -1;
+}
+
+/* Transacciones (.transactions-section) */
+.transactions-section .card {
+    padding: 0;
+}
+
+.transactions-section .card__header {
+    padding: 1.5rem;
+}
+
+/* 6. Componentes Específicos
+-------------------------------------------------------------------*/
+
+/* Lista de Transacciones (.transactions-list) */
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1.5rem 1.5rem;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-item:hover {
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-border);
+    transform: translateX(4px);
+}
+
+.transaction-item__info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.transaction-item__icon {
+    font-size: 1.2rem;
+    width: 20px;
+    text-align: center;
+}
+
+.transaction-item__icon--income {
+    color: var(--color-primary-blue);
+}
+
+.transaction-item__icon--expense {
+    color: var(--color-primary-green);
+}
+
+.transaction-item__details {
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-item__reason {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.transaction-item__meta {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.transaction-item__amount {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.transaction-item__amount--income {
+    color: var(--color-text-saldo-positivo);
+}
+
+.transaction-item__amount--expense {
+    color: var(--color-text-saldo-negativo);
+}
+
+.transactions-list__empty {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: 2rem;
+}
+
+/* Resultados de Búsqueda (.search-results) */
+.search-results {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+    margin-top: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Lista de Alertas (.alerts-list) */
+.alerts-list-container {
+    padding: 2rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.alerts-list__title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    border-radius: var(--border-radius-md);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+}
+
+.alert-item__info {
+    font-weight: 500;
+}
+
+.alert-item__threshold {
+    color: var(--color-primary-blue);
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.alert-item__delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-accent-red);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.alert-item__delete-btn:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* Notificaciones (.notification) */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification {
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    color: var(--color-text-light);
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: slideInNotification 0.3s ease-out, fadeOutNotification 0.3s ease-in 2.7s forwards;
+}
+
+.notification--success {
+    background-color: var(--color-primary-blue);
+}
+
+.notification--error {
+    background-color: var(--color-accent-red);
+}
+
+.notification--info {
+    background-color: #3b82f6;
+}
+
+@keyframes slideInNotification {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOutNotification {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Estilos para la página de login */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-bg-primary);
+}
+
+.login-box {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.login-logo {
+    height: 50px;
+    margin-bottom: 0.75rem;
+}
+
+.login-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+}
+
+.login-divider {
+    text-align: center;
+    margin: 1rem 0;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background-color: var(--color-border);
+}
+
+.login-social .btn {
+    justify-content: center;
+}
+
+.form__group {
+    margin-bottom: 1rem;
+}
+
+.form__actions {
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+/* 7. Media Queries (Diseño Responsivo)
+-------------------------------------------------------------------*/
+@media (max-width: 900px) {
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .header__content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .workspace-selector__container {
+        flex-direction: column;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .form {
+        padding: 1.5rem;
+    }
+
+    .form__actions {
+        flex-direction: column;
+    }
+
+    .form__actions .btn {
+        width: 100%;
+    }
+
+    .modal__content {
+        width: 95%;
+        margin: 5% auto;
+    }
+
+    .modal__header {
+        padding: 1.25rem 1.5rem;
+    }
+}
