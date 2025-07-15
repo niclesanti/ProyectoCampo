@@ -174,7 +174,7 @@ public class TransaccionServiceImpl implements TransaccionService {
 
     @Override
     @Transactional
-    public void nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
+    public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
         if(motivoDTO == null || motivoDTO.motivo() == null || motivoDTO.motivo().isEmpty()) {
             throw new IllegalArgumentException("El motivo no puede ser nulo");
         }
@@ -185,6 +185,7 @@ public class TransaccionServiceImpl implements TransaccionService {
         motivo.setEspacioTrabajo(espacio);
 
         motivoRepository.save(motivo);
+        return new MotivoDTO(motivo.getId(), motivo.getMotivo(), motivo.getEspacioTrabajo().getId());
     }
 
     @Override

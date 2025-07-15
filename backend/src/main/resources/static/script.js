@@ -11,10 +11,7 @@
 
     const appState = {
         transactions: [],
-        reasons: [
-            'Venta de ganado', 'Alimento para ganado', 'Veterinario', 'Venta de leche',
-            'Compra de equipos', 'Mantenimiento', 'Transporte', 'Impuestos', 'Salarios', 'Otros'
-        ],
+        reasons: [],
         contacts: [
             'Juan Pérez', 'Proveedor ABC', 'Dr. García', 'Lácteos del Sur', 'Transporte Rápido',
             'Veterinaria Central', 'Almacén Rural', 'Banco Provincial', 'Municipalidad', 'Otros'
@@ -165,15 +162,23 @@
             populateShareWorkspaceSelect(); // Populate the dropdown when opening the modal
         });
 
-        // Listener para el menú de usuario
-        document.getElementById('userMenuBtn').addEventListener('click', (event) => {
-            event.stopPropagation(); // Evita que el evento de clic en la ventana se dispare inmediatamente
-            toggleUserMenu();
-        });
+        document.getElementById('userMenuBtn').addEventListener('click', () => toggleUserMenu());
 
-        
+        // Listener para el selector de espacio de trabajo principal
+        const workspaceSelect = document.getElementById('workspaceSelect');
+        if (workspaceSelect) {
+            workspaceSelect.addEventListener('change', (event) => {
+                const idEspacioTrabajo = event.target.value;
+                if (idEspacioTrabajo) {
+                    // Aquí se cargarán los datos correspondientes al espacio de trabajo
+                    cargarMotivos(idEspacioTrabajo);
+                } else {
+                    // Limpiar datos si no se selecciona ningún espacio
+                    clearMotivos();
+                }
+            });
+        }
 
-        // Botones para cerrar modales
         document.getElementById('closeTransactionModalBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('closeSearchModalBtn').addEventListener('click', () => toggleModal('searchModal', false));
         document.getElementById('closeBudgetModalBtn').addEventListener('click', () => toggleModal('budgetModal', false));
@@ -555,11 +560,8 @@
     }
 
     function populateAllSelectors() {
-        populateSelector(DOMElements.reasonSelect, appState.reasons, "Seleccionar motivo");
         populateSelector(DOMElements.contactSelect, appState.contacts, "Seleccionar contacto");
-        populateSelector(DOMElements.searchReasonSelect, appState.reasons, "Todos los motivos");
         populateSelector(DOMElements.searchContactSelect, appState.contacts, "Todos los contactos");
-        populateSelector(DOMElements.budgetReasonSelect, appState.reasons, "Seleccionar motivo");
     }
 
     function populateShareWorkspaceSelect() {
@@ -583,16 +585,93 @@
         });
     }
 
+    function cargarMotivos(idEspacioTrabajo) {
+        fetch(`/transaccion/motivo/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los motivos.');
+                }
+                return response.json();
+            })
+            .then(motivos => {
+                appState.reasons = motivos;
+                populateMotivoSelector(DOMElements.reasonSelect, 'Seleccionar motivo');
+                populateMotivoSelector(DOMElements.searchReasonSelect, 'Todos los motivos');
+                populateMotivoSelector(DOMElements.budgetReasonSelect, 'Seleccionar motivo');
+            })
+            .catch(error => {
+                console.error('Error al cargar motivos:', error);
+                showNotification('Error al cargar los motivos', 'error');
+            });
+    }
+
+    function clearMotivos() {
+        appState.reasons = [];
+        populateMotivoSelector(DOMElements.reasonSelect, 'Seleccionar motivo');
+        populateMotivoSelector(DOMElements.searchReasonSelect, 'Todos los motivos');
+        populateMotivoSelector(DOMElements.budgetReasonSelect, 'Seleccionar motivo');
+    }
+
+    function populateMotivoSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.reasons.forEach(motivo => {
+            const opt = document.createElement('option');
+            opt.value = motivo.id; // Usar el ID del motivo como valor
+            opt.textContent = motivo.motivo; // Mostrar el nombre del motivo
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function addReasonToSelectors(reason) {
+        appState.reasons.push(reason);
+        const option = document.createElement('option');
+        option.value = reason.id;
+        option.textContent = reason.motivo;
+        DOMElements.reasonSelect.appendChild(option.cloneNode(true));
+        DOMElements.searchReasonSelect.appendChild(option.cloneNode(true));
+        DOMElements.budgetReasonSelect.appendChild(option.cloneNode(true));
+    }
+
     function handleNewReason() {
         const newReason = DOMElements.newReasonInput.value.trim();
-        if (newReason && !appState.reasons.includes(newReason)) {
-            appState.reasons.push(newReason);
-            populateAllSelectors();
-            DOMElements.reasonSelect.value = newReason;
-            toggleNestedForm('newReasonForm', false);
-            showNotification('Motivo guardado', 'success');
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (newReason) {
+            const motivoData = {
+                motivo: newReason,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/transaccion/motivo/registrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(motivoData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al registrar el motivo.');
+            })
+            .then(motivoGuardado => {
+                toggleNestedForm('newReasonForm', false);
+                showNotification('Motivo guardado con éxito', 'success');
+                addReasonToSelectors(motivoGuardado);
+                DOMElements.reasonSelect.value = motivoGuardado.id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar el motivo', 'error');
+            });
         } else {
-            showNotification('El motivo no es válido o ya existe', 'error');
+            showNotification('Por favor, ingrese un nombre para el motivo', 'error');
         }
     }
 

@@ -114,9 +114,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/motivo/registrar")
-    public ResponseEntity<Void> nuevoMotivoTransaccion(@Valid @RequestBody MotivoDTO motivoDTO) {
-        transaccionService.nuevoMotivoTransaccion(motivoDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<MotivoDTO> nuevoMotivoTransaccion(@Valid @RequestBody MotivoDTO motivoDTO) {
+        MotivoDTO nuevoMotivo = transaccionService.nuevoMotivoTransaccion(motivoDTO);
+        return new ResponseEntity<>(nuevoMotivo, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Listar motivos de transacción por espacio de trabajo",

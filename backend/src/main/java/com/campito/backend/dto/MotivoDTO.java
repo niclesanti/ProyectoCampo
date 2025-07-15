@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record MotivoDTO(
+    Long id,
     @Size(max = 50, message = "El motivo no puede exceder los 50 caracteres")
     String motivo,
     @NotNull(message = "El ID del espacio de trabajo no puede ser nulo")
