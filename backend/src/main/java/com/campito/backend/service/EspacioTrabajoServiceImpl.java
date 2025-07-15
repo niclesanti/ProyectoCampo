@@ -1,5 +1,7 @@
 package com.campito.backend.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 import com.campito.backend.dao.UsuarioRepository;
 import com.campito.backend.dto.EspacioTrabajoDTO;
+import com.campito.backend.dto.EspacioTrabajoListadoDTO;
 import com.campito.backend.model.EspacioTrabajo;
 import com.campito.backend.model.Usuario;
 
@@ -59,6 +62,19 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
         espacioTrabajo.addUsuariosParticipante(usuario);
 
         espacioRepository.save(espacioTrabajo);
+    }
+
+    @Override
+    public List<EspacioTrabajoListadoDTO> listarEspaciosTrabajoPorUsuario(Long idUsuario) {
+        List<EspacioTrabajo> espacios = espacioRepository.findByUsuariosParticipantes_Id(idUsuario);
+        return espacios.stream()
+            .map(espacio -> new EspacioTrabajoListadoDTO(
+                espacio.getId(),
+                espacio.getNombre(),
+                espacio.getSaldo(),
+                espacio.getUsuarioAdmin().getId()
+            ))
+            .toList();
     }
 
 }
