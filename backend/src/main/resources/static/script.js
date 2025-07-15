@@ -12,10 +12,7 @@
     const appState = {
         transactions: [],
         reasons: [],
-        contacts: [
-            'Juan Pérez', 'Proveedor ABC', 'Dr. García', 'Lácteos del Sur', 'Transporte Rápido',
-            'Veterinaria Central', 'Almacén Rural', 'Banco Provincial', 'Municipalidad', 'Otros'
-        ],
+        contacts: [],
         budgets: [],
         workspaces: [
             { id: 1, name: 'Campo en Guadalupe Norte' },
@@ -176,10 +173,12 @@
                         updateBalance();
                     }
                     cargarMotivos(idEspacioTrabajo);
+                    cargarContactos(idEspacioTrabajo);
                 } else {
                     appState.currentBalance = 0;
                     updateBalance();
                     clearMotivos();
+                    clearContactos();
                 }
             });
         }
@@ -563,8 +562,7 @@
     }
 
     function populateAllSelectors() {
-        populateSelector(DOMElements.contactSelect, appState.contacts, "Seleccionar contacto");
-        populateSelector(DOMElements.searchContactSelect, appState.contacts, "Todos los contactos");
+        // Ya no se necesita poblar los selectores de contactos desde aquí
     }
 
     function populateShareWorkspaceSelect() {
@@ -635,6 +633,50 @@
         DOMElements.budgetReasonSelect.appendChild(option.cloneNode(true));
     }
 
+    function cargarContactos(idEspacioTrabajo) {
+        fetch(`/transaccion/contacto/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los contactos.');
+                }
+                return response.json();
+            })
+            .then(contactos => {
+                appState.contacts = contactos;
+                populateContactoSelector(DOMElements.contactSelect, 'Seleccionar contacto');
+                populateContactoSelector(DOMElements.searchContactSelect, 'Todos los contactos');
+            })
+            .catch(error => {
+                console.error('Error al cargar contactos:', error);
+                showNotification('Error al cargar los contactos', 'error');
+            });
+    }
+
+    function clearContactos() {
+        appState.contacts = [];
+        populateContactoSelector(DOMElements.contactSelect, 'Seleccionar contacto');
+        populateContactoSelector(DOMElements.searchContactSelect, 'Todos los contactos');
+    }
+
+    function populateContactoSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.contacts.forEach(contacto => {
+            const opt = document.createElement('option');
+            opt.value = contacto.id;
+            opt.textContent = contacto.nombre;
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function addContactToSelectors(contact) {
+        appState.contacts.push(contact);
+        const option = document.createElement('option');
+        option.value = contact.id;
+        option.textContent = contact.nombre;
+        DOMElements.contactSelect.appendChild(option.cloneNode(true));
+        DOMElements.searchContactSelect.appendChild(option.cloneNode(true));
+    }
+
     function handleNewReason() {
         const newReason = DOMElements.newReasonInput.value.trim();
         const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
@@ -679,15 +721,45 @@
     }
 
     function handleNewContact() {
-        const newContact = DOMElements.newContactInput.value.trim();
-        if (newContact && !appState.contacts.includes(newContact)) {
-            appState.contacts.push(newContact);
-            populateAllSelectors();
-            DOMElements.contactSelect.value = newContact;
-            toggleNestedForm('newContactForm', false);
-            showNotification('Contacto guardado', 'success');
+        const newContactName = DOMElements.newContactInput.value.trim();
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (newContactName) {
+            const contactoData = {
+                nombre: newContactName,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/transaccion/contacto/registrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(contactoData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al registrar el contacto.');
+            })
+            .then(contactoGuardado => {
+                toggleNestedForm('newContactForm', false);
+                showNotification('Contacto guardado con éxito', 'success');
+                addContactToSelectors(contactoGuardado);
+                DOMElements.contactSelect.value = contactoGuardado.id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar el contacto', 'error');
+            });
         } else {
-            showNotification('El contacto no es válido o ya existe', 'error');
+            showNotification('Por favor, ingrese un nombre para el contacto', 'error');
         }
     }
 

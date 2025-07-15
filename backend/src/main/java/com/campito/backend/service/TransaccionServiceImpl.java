@@ -159,7 +159,7 @@ public class TransaccionServiceImpl implements TransaccionService {
 
     @Override
     @Transactional
-    public void registrarContactoTransferencia(ContactoDTO contactoDTO) {
+    public ContactoDTO registrarContactoTransferencia(ContactoDTO contactoDTO) {
         if(contactoDTO == null || contactoDTO.nombre() == null || contactoDTO.nombre().isEmpty()) {
             throw new IllegalArgumentException("El contacto no puede ser nulo");
         }
@@ -170,6 +170,7 @@ public class TransaccionServiceImpl implements TransaccionService {
         contacto.setEspacioTrabajo(espacio);
 
         contactoRepository.save(contacto);
+        return new ContactoDTO(contacto.getId(), contacto.getNombre(), contacto.getEspacioTrabajo().getId());
     }
 
     @Override

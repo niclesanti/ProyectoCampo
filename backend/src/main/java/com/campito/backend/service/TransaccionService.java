@@ -14,7 +14,7 @@ public interface TransaccionService {
     public void registrarTransaccion(TransaccionDTO transaccionDTO);
     public void removerTransaccion(Long id);
     public List<TransaccionListadoDTO> buscarTransaccion(TransaccionBusquedaDTO datosBusqueda);
-    public void registrarContactoTransferencia(ContactoDTO contactoDTO);
+    public ContactoDTO registrarContactoTransferencia(ContactoDTO contactoDTO);
     public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO);
     public List<ContactoListadoDTO> listarContactos(Long idEspacioTrabajo);
     public List<MotivoListadoDTO> listarMotivos(Long idEspacioTrabajo);

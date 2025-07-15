@@ -88,9 +88,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/contacto/registrar")
-    public ResponseEntity<Void> registrarContactoTransferencia(@Valid @RequestBody ContactoDTO contactoDTO) {
-        transaccionService.registrarContactoTransferencia(contactoDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<ContactoDTO> registrarContactoTransferencia(@Valid @RequestBody ContactoDTO contactoDTO) {
+        ContactoDTO nuevoContacto = transaccionService.registrarContactoTransferencia(contactoDTO);
+        return new ResponseEntity<>(nuevoContacto, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Listar contactos de transferencia por espacio de trabajo",

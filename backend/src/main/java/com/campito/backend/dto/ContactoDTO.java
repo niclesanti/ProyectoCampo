@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record ContactoDTO(
+    Long id,
     @Size(max = 50, message = "El nombre de contacto no puede exceder los 50 caracteres")
     String nombre,
     @NotNull(message = "El ID del espacio de trabajo no puede ser nulo")
