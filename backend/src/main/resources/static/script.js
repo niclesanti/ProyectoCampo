@@ -27,7 +27,7 @@
             balanceTrend: null
         },
         lastSearchResults: [],
-        authenticatedUserId: null,
+        currentBalance: 0,
     };
 
     const DOMElements = {
@@ -170,10 +170,15 @@
             workspaceSelect.addEventListener('change', (event) => {
                 const idEspacioTrabajo = event.target.value;
                 if (idEspacioTrabajo) {
-                    // Aquí se cargarán los datos correspondientes al espacio de trabajo
+                    const selectedWorkspace = appState.workspaces.find(ws => ws.id == idEspacioTrabajo);
+                    if (selectedWorkspace) {
+                        appState.currentBalance = selectedWorkspace.saldo;
+                        updateBalance();
+                    }
                     cargarMotivos(idEspacioTrabajo);
                 } else {
-                    // Limpiar datos si no se selecciona ningún espacio
+                    appState.currentBalance = 0;
+                    updateBalance();
                     clearMotivos();
                 }
             });
@@ -232,9 +237,7 @@
     }
 
     function updateBalance() {
-        const totalIncome = appState.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpenses = appState.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const balance = totalIncome - totalExpenses;
+        const balance = appState.currentBalance;
         DOMElements.balanceAmount.textContent = balance.toLocaleString('es-AR');
         DOMElements.balanceContainer.className = `balance__amount ${balance >= 0 ? 'balance__amount--positive' : 'balance__amount--negative'}`;
         DOMElements.balanceDate.textContent = `Actualizado: ${new Date().toLocaleDateString('es-AR')}`;
