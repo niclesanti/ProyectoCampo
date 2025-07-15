@@ -87,6 +87,7 @@
                     document.querySelector('.user-menu__username').textContent = usuario.nombre;
                     document.querySelector('.user-menu__email').textContent = usuario.email;
                     appState.authenticatedUserId = usuario.id; // Guardar el ID del usuario
+                    loadWorkspacesForUser(appState.authenticatedUserId); // Cargar espacios de trabajo
                 }
             })
             .catch(error => {
@@ -94,6 +95,42 @@
                 // Opcional: redirigir al login si no se pueden obtener los datos
                 // window.location.href = '/login.html';
             });
+    }
+
+    function loadWorkspacesForUser(userId) {
+        if (!userId) {
+            console.warn('No se puede cargar espacios de trabajo: ID de usuario no disponible.');
+            return;
+        }
+        fetch(`/espaciotrabajo/listar/${userId}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('No se pudieron cargar los espacios de trabajo.');
+            })
+            .then(workspaces => {
+                appState.workspaces = workspaces;
+                populateShareWorkspaceSelect(); // Actualizar el selector de compartir
+                populateMainWorkspaceSelect(); // Actualizar el selector principal del dashboard
+            })
+            .catch(error => {
+                console.error('Error al cargar espacios de trabajo:', error);
+                showNotification('Error al cargar los espacios de trabajo', 'error');
+            });
+    }
+
+    function populateMainWorkspaceSelect() {
+        const selectElement = document.getElementById('workspaceSelect');
+        if (!selectElement) return;
+
+        selectElement.innerHTML = '<option value="">Seleccionar espacio de trabajo</option>';
+        appState.workspaces.forEach(workspace => {
+            const option = document.createElement('option');
+            option.value = workspace.id;
+            option.textContent = workspace.nombre;
+            selectElement.appendChild(option);
+        });
     }
 
     function loadSampleData() {
@@ -437,8 +474,8 @@
                 toggleModal('workspaceModal', false);
                 // Mostrar notificación de éxito
                 showNotification(`Espacio "${workspaceName}" creado con éxito`, 'success');
-                // Opcional: Actualizar la lista de espacios de trabajo en la UI
-                // loadWorkspaces(); 
+                // Actualizar la lista de espacios de trabajo en la UI
+                loadWorkspacesForUser(appState.authenticatedUserId); 
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -493,7 +530,7 @@
         appState.workspaces.forEach(workspace => {
             const option = document.createElement('option');
             option.value = workspace.id;
-            option.textContent = workspace.name;
+            option.textContent = workspace.nombre;
             selectElement.appendChild(option);
         });
     }
