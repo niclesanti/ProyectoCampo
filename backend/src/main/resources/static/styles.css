@@ -39,7 +39,7 @@
     /* Paleta de Colores Inspirada en una gama de azules */
     --color-primary-blue: #3B82F6;
     --color-primary-blue-dark: #03324F;
-    --color-primary-green: #16b156;
+    --color-primary-green: #08a148;
     --color-accent-red: #EF4444;
     --color-conteiner-saldo: #ffffff;
 
@@ -208,7 +208,7 @@ body {
     font-size: 0.95rem;
     color: var(--color-text-secondary);
     margin-bottom: 1.5rem;
-    text-align: center;
+    text-align: left;
 }
 
 .form__group {
@@ -856,7 +856,7 @@ body {
 }
 
 .notification--success {
-    background-color: var(--color-primary-blue);
+    background-color: var(--color-primary-green);
 }
 
 .notification--error {

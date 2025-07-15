@@ -30,6 +30,7 @@
             balanceTrend: null
         },
         lastSearchResults: [],
+        authenticatedUserId: null,
     };
 
     const DOMElements = {
@@ -85,6 +86,7 @@
                 if (usuario) {
                     document.querySelector('.user-menu__username').textContent = usuario.nombre;
                     document.querySelector('.user-menu__email').textContent = usuario.email;
+                    appState.authenticatedUserId = usuario.id; // Guardar el ID del usuario
                 }
             })
             .catch(error => {
@@ -409,7 +411,7 @@
             errorElement.hidden = true;
             const workspaceData = {
                 nombre: workspaceName,
-                idUsuarioAdmin: 1 // ID de usuario harcodeado como se solicita
+                idUsuarioAdmin: appState.authenticatedUserId
             };
 
             console.log('Enviando datos:', JSON.stringify(workspaceData));
@@ -422,17 +424,21 @@
                 body: JSON.stringify(workspaceData)
             })
             .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Error en la solicitud');
+                if (!response.ok) {
+                    // Si la respuesta no es OK, lanzamos un error para que lo capture el .catch
+                    throw new Error('Error en la solicitud al servidor');
                 }
+                // No es necesario procesar un cuerpo JSON si la respuesta es exitosa pero vacía
             })
-            .then(data => {
-                console.log('Respuesta del servidor:', data);
+            .then(() => {
+                // Limpiar el campo de texto
+                workspaceNameInput.value = '';
+                // Cerrar el modal
                 toggleModal('workspaceModal', false);
+                // Mostrar notificación de éxito
                 showNotification(`Espacio "${workspaceName}" creado con éxito`, 'success');
-                // Aquí se podría añadir a una lista de espacios y actualizar el selector principal
+                // Opcional: Actualizar la lista de espacios de trabajo en la UI
+                // loadWorkspaces(); 
             })
             .catch(error => {
                 console.error('Error:', error);
