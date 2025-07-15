@@ -490,16 +490,54 @@
     function handleShareSubmit(event) {
         event.preventDefault();
         const workspaceId = DOMElements.shareWorkspaceSelect.value;
-        const email = document.getElementById('shareEmail').value.trim();
+        const emailInput = document.getElementById('shareEmail');
+        const email = emailInput.value.trim();
 
-        if (workspaceId && email) {
-            const workspace = appState.workspaces.find(ws => ws.id == workspaceId);
-            console.log(`Compartiendo espacio "${workspace ? workspace.name : 'N/A'}" con ${email}`);
-            toggleModal('shareModal', false);
-            showNotification(`Invitación enviada a ${email} para el espacio "${workspace ? workspace.name : 'N/A'}"`, 'success');
-        } else {
-            showNotification('Por favor, seleccione un espacio y/o ingrese un email válido', 'error');
+        if (!workspaceId) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
         }
+
+        if (!email) {
+            showNotification('Por favor, ingrese un email válido.', 'error');
+            return;
+        }
+
+        if (email.length > 100) {
+            showNotification('El email no puede exceder los 100 caracteres.', 'error');
+            return;
+        }
+
+        if (!appState.authenticatedUserId) {
+            showNotification('Error: ID de usuario autenticado no disponible.', 'error');
+            console.error('Error: appState.authenticatedUserId es null o undefined.');
+            return;
+        }
+
+        const idUsuarioAdmin = appState.authenticatedUserId;
+
+        fetch(`http://localhost:8080/espaciotrabajo/compartir/${email}/${workspaceId}/${idUsuarioAdmin}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // No se envía body ya que los datos van en la URL
+        })
+        .then(response => {
+            if (response.ok) {
+                // Limpiar campos y cerrar modal
+                DOMElements.shareWorkspaceSelect.value = '';
+                emailInput.value = '';
+                toggleModal('shareModal', false);
+                showNotification(`Invitación enviada a ${email} para el espacio de trabajo.`, 'success');
+            } else {
+                throw new Error('Error al compartir el espacio de trabajo.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al compartir el espacio de trabajo.', 'error');
+        });
     }
 
     function handleBudgetSubmit(event) {

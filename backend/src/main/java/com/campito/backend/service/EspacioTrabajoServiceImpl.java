@@ -46,9 +46,9 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
 
     @Override
     @Transactional
-    public void compartirEspacioTrabajo(Long idUsuario, Long idEspacioTrabajo, Long idUsuarioAdmin) {
-        if(idUsuario == null || idEspacioTrabajo == null || idUsuarioAdmin == null) {
-            throw new IllegalArgumentException("El ID del usuario, el ID del espacio de trabajo y el ID del usuario administrador del espacio no pueden ser nulos");
+    public void compartirEspacioTrabajo(String email, Long idEspacioTrabajo, Long idUsuarioAdmin) {
+        if(email == null || idEspacioTrabajo == null || idUsuarioAdmin == null) {
+            throw new IllegalArgumentException("El email, el ID del espacio de trabajo y el ID del usuario administrador del espacio no pueden ser nulos");
         }
 
         EspacioTrabajo espacioTrabajo = espacioRepository.findById(idEspacioTrabajo).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + idEspacioTrabajo + " no encontrado"));
@@ -57,7 +57,7 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
             throw new IllegalArgumentException("El usuario administrador no tiene permiso para compartir este espacio de trabajo");
         }
 
-        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new EntityNotFoundException("Usuario con ID " + idUsuario + " no encontrado"));
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Usuario con email " + email + " no encontrado"));
 
         espacioTrabajo.addUsuariosParticipante(usuario);
 

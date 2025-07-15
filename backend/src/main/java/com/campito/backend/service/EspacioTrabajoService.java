@@ -7,6 +7,6 @@ import com.campito.backend.dto.EspacioTrabajoListadoDTO;
 
 public interface EspacioTrabajoService {
     public void registrarEspacioTrabajo(EspacioTrabajoDTO espacioTrabajoDTO);
-    public void compartirEspacioTrabajo(Long idUsuario, Long idEspacioTrabajo, Long idUsuarioAdmin);
+    public void compartirEspacioTrabajo(String email, Long idEspacioTrabajo, Long idUsuarioAdmin);
     public List<EspacioTrabajoListadoDTO> listarEspaciosTrabajoPorUsuario(Long idUsuario);
 }
