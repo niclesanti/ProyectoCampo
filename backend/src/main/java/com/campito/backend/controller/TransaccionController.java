@@ -49,9 +49,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/registrar")
-    public ResponseEntity<Void> registrarTransaccion(@Valid @RequestBody TransaccionDTO transaccionDTO) {
-        transaccionService.registrarTransaccion(transaccionDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<TransaccionDTO> registrarTransaccion(@Valid @RequestBody TransaccionDTO transaccionDTO) {
+        TransaccionDTO nuevaTransaccion = transaccionService.registrarTransaccion(transaccionDTO);
+        return new ResponseEntity<>(nuevaTransaccion, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Remover transacción",

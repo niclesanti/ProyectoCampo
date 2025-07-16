@@ -50,7 +50,7 @@ public class TransaccionServiceImpl implements TransaccionService {
 
     @Override
     @Transactional
-    public void registrarTransaccion(TransaccionDTO transaccionDTO) {
+    public TransaccionDTO registrarTransaccion(TransaccionDTO transaccionDTO) {
         if(transaccionDTO == null) {
             throw new IllegalArgumentException("La transaccion no puede ser nula");
         }
@@ -92,7 +92,17 @@ public class TransaccionServiceImpl implements TransaccionService {
         }
 
         transaccionRepository.save(transaccion);
-
+        return new TransaccionDTO(
+            transaccion.getId(),
+            transaccion.getFecha(),
+            transaccion.getMonto(),
+            transaccion.getTipo(),
+            transaccion.getDescripcion() != null ? transaccion.getDescripcion() : null,
+            transaccion.getNombreCompletoAuditoria(),
+            transaccion.getEspacioTrabajo().getId(),
+            transaccion.getMotivo().getId(),
+            transaccion.getContacto() != null ? transaccion.getContacto().getId() : null
+        );
     }
 
     @Override

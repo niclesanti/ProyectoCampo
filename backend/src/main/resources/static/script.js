@@ -424,19 +424,75 @@
     function handleTransactionSubmit(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const newTransaction = {
-            id: Date.now(),
-            type: formData.get('transactionType'),
-            amount: parseFloat(formData.get('amount')),
-            reason: formData.get('reason'),
-            recipient: formData.get('recipient'),
-            description: formData.get('description'),
-            date: formData.get('transactionDate'),
+
+        const transactionType = formData.get('transactionType');
+        const transactionDate = formData.get('transactionDate');
+        const amount = parseFloat(formData.get('amount'));
+        const idMotivo = formData.get('reason'); // idMotivo
+        const idContacto = formData.get('recipient'); // idContacto (opcional)
+        const description = formData.get('description');
+
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+        const nombreCompletoAuditoria = document.querySelector('.user-menu__username').textContent; // Obtener del menú de usuario
+
+        // Validaciones de campos obligatorios
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
+        }
+        if (!transactionType || !transactionDate || isNaN(amount) || amount <= 0 || !idMotivo) {
+            showNotification('Por favor, complete todos los campos obligatorios (Tipo, Fecha, Monto, Motivo).', 'error');
+            return;
+        }
+
+        const transaccionData = {
+            fecha: transactionDate,
+            monto: amount,
+            tipo: transactionType === 'income' ? 'INGRESO' : 'GASTO', // Mapear a los valores del enum de Java
+            descripcion: description || null, // Si es vacío, enviar null
+            nombreCompletoAuditoria: nombreCompletoAuditoria,
+            idEspacioTrabajo: idEspacioTrabajo,
+            idMotivo: idMotivo,
+            idContacto: idContacto || null // Si es vacío, enviar null
         };
-        appState.transactions.unshift(newTransaction);
-        updateDashboard();
-        toggleModal('transactionModal', false);
-        showNotification('Transacción guardada con éxito', 'success');
+
+        fetch('/transaccion/registrar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transaccionData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Asumiendo que la API devuelve el nuevo saldo o la transacción completa
+            }
+            throw new Error('Error al registrar la transacción.');
+        })
+        .then(transaccionGuardada => {
+            // Actualizar el saldo directamente con el monto de la transacción
+            if (transaccionGuardada.tipo === 'INGRESO') {
+                appState.currentBalance += transaccionGuardada.monto;
+            } else if (transaccionGuardada.tipo === 'GASTO') {
+                appState.currentBalance -= transaccionGuardada.monto;
+            }
+
+            // Actualizar el saldo del espacio de trabajo en appState.workspaces
+            const currentWorkspaceId = document.getElementById('workspaceSelect').value;
+            const currentWorkspace = appState.workspaces.find(ws => ws.id == currentWorkspaceId);
+            if (currentWorkspace) {
+                currentWorkspace.saldo = appState.currentBalance;
+            }
+
+            updateBalance();
+
+            toggleModal('transactionModal', false);
+            showNotification('Transacción guardada con éxito', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al guardar la transacción', 'error');
+        });
     }
 
     function handleSearchSubmit(event) {

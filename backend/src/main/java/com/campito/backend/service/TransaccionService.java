@@ -11,7 +11,7 @@ import com.campito.backend.dto.TransaccionDTO;
 import com.campito.backend.dto.TransaccionListadoDTO;
 
 public interface TransaccionService {
-    public void registrarTransaccion(TransaccionDTO transaccionDTO);
+    public TransaccionDTO registrarTransaccion(TransaccionDTO transaccionDTO);
     public void removerTransaccion(Long id);
     public List<TransaccionListadoDTO> buscarTransaccion(TransaccionBusquedaDTO datosBusqueda);
     public ContactoDTO registrarContactoTransferencia(ContactoDTO contactoDTO);
