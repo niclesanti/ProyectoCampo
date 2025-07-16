@@ -46,7 +46,7 @@
         contactSelect: document.getElementById('recipient'),
         searchReasonSelect: document.getElementById('searchReason'),
         searchContactSelect: document.getElementById('searchRecipient'),
-        searchYearSelect: document.getElementById('searchYear'),
+        searchYearInput: document.getElementById('searchYear'),
         budgetReasonSelect: document.getElementById('budgetReason'),
         newReasonInput: document.getElementById('newReasonInput'),
         newContactInput: document.getElementById('newContactInput'),
@@ -64,7 +64,7 @@
         loadSampleData();
         setupEventListeners();
         updateDashboard();
-        populateYearSelector();
+        DOMElements.searchYearInput.value = new Date().getFullYear();
         loadAuthenticatedUser();
     }
 
@@ -404,9 +404,17 @@
         const modal = document.getElementById(modalId);
         if (show) {
             modal.hidden = false;
+            // Resetear formularios al abrir
             if (modalId === 'transactionModal') DOMElements.transactionForm.reset();
-            if (modalId === 'searchModal') DOMElements.searchForm.reset();
             if (modalId === 'budgetModal') DOMElements.budgetForm.reset();
+            if (modalId === 'workspaceModal') DOMElements.workspaceForm.reset();
+            if (modalId === 'shareModal') DOMElements.shareForm.reset();
+
+            // Caso especial para el modal de búsqueda
+            if (modalId === 'searchModal') {
+                DOMElements.searchForm.reset();
+                DOMElements.searchYearInput.value = new Date().getFullYear();
+            }
         } else {
             modal.hidden = true;
         }
@@ -497,8 +505,55 @@
 
     function handleSearchSubmit(event) {
         event.preventDefault();
-        // Lógica de búsqueda deshabilitada temporalmente
-        alert('La funcionalidad de búsqueda se conectará con el backend más adelante.');
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
+        }
+
+        const reasonSelect = DOMElements.searchForm.searchReason;
+        const recipientSelect = DOMElements.searchForm.searchRecipient;
+
+        const searchData = {
+            mes: DOMElements.searchForm.searchMonth.value ? parseInt(DOMElements.searchForm.searchMonth.value) : null,
+            anio: DOMElements.searchForm.searchYear.value ? parseInt(DOMElements.searchForm.searchYear.value) : null,
+            motivo: reasonSelect.value ? reasonSelect.options[reasonSelect.selectedIndex].textContent : null,
+            contacto: recipientSelect.value ? recipientSelect.options[recipientSelect.selectedIndex].textContent : null,
+            idEspacioTrabajo: parseInt(idEspacioTrabajo)
+        };
+
+        fetch('/transaccion/buscar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error al buscar las transacciones.');
+        })
+        .then(transactions => {
+            appState.lastSearchResults = transactions.map(t => ({
+                id: t.id,
+                type: t.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: t.monto,
+                reason: t.nombreMotivo,
+                recipient: t.nombreContacto,
+                description: t.descripcion,
+                date: t.fecha
+            }));
+            applySearchOrder();
+            showNotification(`Se encontraron ${transactions.length} transacciones.`, 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
+            DOMElements.searchResultsContainer.innerHTML = '<p class="transactions-list__empty">Error al cargar los resultados.</p>';
+        });
     }
 
     function handleWorkspaceSubmit(event) {
@@ -895,35 +950,7 @@
         alert(`Detalles de la Transacción:\n\n${details}`);
     }
 
-    /**
-     * Rellena el selector de años en el formulario de búsqueda.
-     */
-    function populateYearSelector() {
-        // Se busca el elemento directamente aquí para asegurar que el DOM esté cargado.
-        const selectElement = document.getElementById('searchYear');
-        if (!selectElement) {
-            console.error("El elemento select con id 'searchYear' no fue encontrado.");
-            return;
-        }
-
-        const currentYear = new Date().getFullYear();
-        const startYear = 2000;
-        const endYear = 2030;
-
-        // Limpiar opciones existentes (excepto la primera "Todos")
-        while (selectElement.options.length > 1) {
-            selectElement.remove(1);
-        }
-
-        for (let year = endYear; year >= startYear; year--) {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            selectElement.appendChild(option);
-        }
-        
-        selectElement.value = currentYear;
-    }
+    
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('loginForm')) {

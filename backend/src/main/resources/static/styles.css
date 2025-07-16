@@ -201,7 +201,7 @@ body {
 
 /* Formularios (.form) */
 .form {
-    padding: 2rem;
+    padding: 1rem 2rem; /* Padding vertical reducido */
 }
 
 .form__subtitle {
@@ -212,7 +212,7 @@ body {
 }
 
 .form__group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem; /* Reducido */
 }
 
 .form__label {
@@ -289,7 +289,7 @@ body {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
-    margin-top: 2rem;
+    margin-top: 1.5rem; /* Reducido */
     padding-top: 1.5rem;
     border-top: 1px solid var(--color-border);
 }
@@ -323,11 +323,11 @@ body {
     background: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
     width: 90%;
-    max-width: 600px;
+    max-width: 700px; /* Ancho aumentado para acomodar mejor la lista */
     box-shadow: var(--shadow-lg);
     animation: slideInModal 0.3s ease;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow-y: auto; /* Permite el scroll del modal completo */
     display: flex;
     flex-direction: column;
 }
@@ -347,7 +347,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 2rem; /* Padding vertical reducido */
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
 }
@@ -701,7 +701,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 0.75rem 1rem; /* Padding vertical reducido */
     border-radius: var(--border-radius-md);
     border: 1px solid transparent;
     cursor: pointer;
@@ -747,16 +747,17 @@ body {
 .transaction-item__reason {
     font-weight: 600;
     color: var(--color-text-primary);
+    font-size: 0.95rem; /* Ligeramente reducido */
 }
 
 .transaction-item__meta {
     color: var(--color-text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.8rem; /* Reducido */
 }
 
 .transaction-item__amount {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Ligeramente reducido */
 }
 
 .transaction-item__amount--income {
@@ -776,9 +777,11 @@ body {
 /* Resultados de Búsqueda (.search-results) */
 .search-results {
     border-top: 1px solid var(--color-border);
-    padding-top: 1rem;
+    padding: 0.5rem;
     margin-top: 1rem;
-    max-height: 400px;
+    background-color: var(--color-bg-primary);
+    border-radius: var(--border-radius-md);
+    max-height: 400px; /* Altura máxima para escritorio */
     overflow-y: auto;
 }
 
@@ -989,4 +992,6 @@ body {
     .modal__header {
         padding: 1.25rem 1.5rem;
     }
+
+    
 }
