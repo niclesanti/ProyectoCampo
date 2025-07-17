@@ -382,90 +382,60 @@ body {
 .header {
     background: var(--color-primary-blue);
     color: var(--color-text-light);
-    padding: 1rem; /* Reducido el padding horizontal */
+    padding: 0.75rem 1.5rem; /* Padding ajustado */
     box-shadow: var(--shadow-md);
 }
 
 .header__content {
-    max-width: 1200px;
-    margin: 0 auto;
     display: flex;
-    justify-content: space-between; /* Mantiene el espacio entre los elementos */
     align-items: center;
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan a la siguiente línea */
-    row-gap: 1rem; /* Espacio vertical cuando los elementos se envuelven */
+    width: 100%;
+}
+
+.header__left-section,
+.header__center-section,
+.header__right-section {
+    display: flex;
+    align-items: center;
 }
 
 .header__left-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem; /* Mantenemos el gap reducido */
+    flex: 1;
+    justify-content: flex-start;
 }
 
-.header__nav {
-    display: flex;
-    gap: 0.5rem; /* Reducido */
+.header__center-section {
+    flex-shrink: 0; /* Evita que el logo se encoja */
+    justify-content: center;
 }
 
-.header__nav-btn {
-    background: none;
-    border: none;
-    color: var(--color-text-light);
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    padding: 0.5rem 0.75rem; /* Pequeño padding para área de clic */
-    border-radius: var(--border-radius-sm);
-}
-
-.header__nav-btn:hover {
-    opacity: 0.8;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.header__logo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header__logo-icon {
-    font-size: 1.5rem;
+.header__right-section {
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .header__logo-img {
     height: 36px;
 }
 
-.header__user-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    position: relative; /* Clave para posicionar el menú */
-    margin-left: auto; /* Esto empujará este elemento a la derecha */
-}
-
-.header__user-name {
-    font-weight: 500;
-}
-
-.header__logout-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.header__icon-btn {
+    background: transparent;
+    border: none;
     color: var(--color-text-light);
-    width: 40px; /* Aumentado para un mejor clic */
-    height: 40px;
-    border-radius: 50%; /* Círculo perfecto */
+    font-size: 1.25rem;
     cursor: pointer;
-    transition: var(--transition-fast);
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s ease;
 }
 
-.header__logout-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+.header__icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Menú Desplegable de Usuario */
@@ -952,6 +922,176 @@ body {
     justify-content: center;
 }
 
+/* Menú Lateral (side-menu) */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1200;
+    display: flex;
+    visibility: hidden;
+    transition: visibility 0.3s;
+}
+
+.side-menu.is-open {
+    visibility: visible;
+}
+
+.side-menu__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    cursor: pointer;
+}
+
+.side-menu.is-open .side-menu__overlay {
+    opacity: 1;
+}
+
+.side-menu__content {
+    width: 280px;
+    background-color: var(--color-bg-secondary);
+    height: 100%;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+.side-menu.is-open .side-menu__content {
+    transform: translateX(0);
+}
+
+.side-menu__header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.75rem;
+}
+
+.side-menu__close-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.side-menu__close-btn:hover {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+.side-menu__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.side-menu__logo-img {
+    height: 50px;
+    margin-bottom: 0.75rem;
+}
+
+.side-menu__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.side-menu__nav {
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-menu__nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.5rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.side-menu__nav-link:hover {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+.side-menu__nav-link--active {
+    color: var(--color-primary-blue);
+    font-weight: 600;
+    background-color: var(--color-bg-primary);
+    border-left-color: var(--color-primary-blue);
+}
+
+.side-menu__nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.side-menu__user-info {
+    margin-top: auto; /* Empuja la sección al final */
+    padding: 1rem 1.5rem;
+    background-color: var(--color-bg-primary);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.side-menu__user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.side-menu__username {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+}
+
+.side-menu__email {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.side-menu__logout-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.side-menu__logout-btn:hover {
+    color: var(--color-accent-red);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+
 /* 7. Media Queries (Diseño Responsivo)
 -------------------------------------------------------------------*/
 @media (max-width: 900px) {
@@ -961,11 +1101,6 @@ body {
 }
 
 @media (max-width: 600px) {
-    .header__content {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
     .workspace-selector__container {
         flex-direction: column;
     }

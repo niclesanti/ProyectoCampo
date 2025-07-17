@@ -1,8 +1,7 @@
-Necesito que generes el archivo login.html en ProyectoCampo\backend\src\main\resources\static y los estilos y funcionalidades en styles.css y script.js para que un usuario pueda ingresar mail y clave. Debe haber un boton "Iniciar sesion" y otro "Iniciar sesion con Google" (este ultimo boton por ahora no hace nada). Seguir los colores y estilos del dashboard. Al presionar "Iniciar sesion" se debe generar el siguiente JSON:
-{
-  "email": "string",
-  "clave": "string"
-}
-y consumir la siguiente API: http://localhost:8080/usuario/login
+Necesito ahora que hagamos los siguientes cambios en el header del dashboard:
 
-configurar SecurityConfig para que funcione la autenticacion de usuario y acceder al dashboard una vez autenticado. Puedes hacerlo?
+- En el header solo deben quedar los siguientes elementos: A la izquierda como está actualmente (no mover) el boton de menu hamburguesa. En el centro del header va a estar el logo de la aplicacion (centrado) y a la derecha unicamente el boton de notificaciones. Por lo tanto se debe remover el boton de usuario.
+- Las funciones del boton de usuario ahora se agregaran en el nuevo menu desplegable de la izquierda. Debajo de los botones Finanzas y Produccion, agregaremos una seccion para la información del usuario, donde tendra la misma informacion que antes: Nombre del usuario, email y el boton para cerrar sesion (que funcione igual que antes, es decir, que cierre correctamente la sesion del usuario autenticado). Puedes hacer esto?
+- Ajustar las configuraciones para el responsive del header. Necesito que los elementos del header vistos desde un movil no se encimen, sino que permanezcan en su lugar. Es decir, que el menu hamburguesa permanesca a la izquierda, el logo centrado y las notificaciones a la derecha.
+
+Necesito que realices estos cambios de manera ordenada en el codigo, respetando las buenas practicas del codigo. Analizar los archivos dashboard.html, styles.css y script.js antes de realizar los cambios, para realizar una buena estrategia.

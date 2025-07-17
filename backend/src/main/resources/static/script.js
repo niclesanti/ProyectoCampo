@@ -28,12 +28,13 @@
     };
 
     const DOMElements = {
+        sideMenu: document.getElementById('sideMenu'),
+        sideMenuOverlay: document.getElementById('sideMenuOverlay'),
         transactionModal: document.getElementById('transactionModal'),
         searchModal: document.getElementById('searchModal'),
         budgetModal: document.getElementById('budgetModal'),
         workspaceModal: document.getElementById('workspaceModal'),
         shareModal: document.getElementById('shareModal'),
-        userMenu: document.getElementById('userMenu'), // Menú de usuario
         shareWorkspaceSelect: document.getElementById('shareWorkspaceSelect'),
         transactionForm: document.getElementById('transactionForm'),
         searchForm: document.getElementById('searchForm'),
@@ -78,8 +79,8 @@
             })
             .then(usuario => {
                 if (usuario) {
-                    document.querySelector('.user-menu__username').textContent = usuario.nombre;
-                    document.querySelector('.user-menu__email').textContent = usuario.email;
+                    document.querySelector('.side-menu__username').textContent = usuario.nombre;
+                    document.querySelector('.side-menu__email').textContent = usuario.email;
                     appState.authenticatedUserId = usuario.id; // Guardar el ID del usuario
                     loadWorkspacesForUser(appState.authenticatedUserId); // Cargar espacios de trabajo
                 }
@@ -142,7 +143,10 @@
             populateShareWorkspaceSelect(); // Populate the dropdown when opening the modal
         });
 
-        document.getElementById('userMenuBtn').addEventListener('click', () => toggleUserMenu());
+        // Listeners para el menú lateral
+        document.getElementById('menuBtn').addEventListener('click', () => toggleSideMenu(true));
+        document.getElementById('closeSideMenuBtn').addEventListener('click', () => toggleSideMenu(false));
+        DOMElements.sideMenuOverlay.addEventListener('click', () => toggleSideMenu(false));
 
         // Listener para el selector de espacio de trabajo principal
         const workspaceSelect = document.getElementById('workspaceSelect');
@@ -198,20 +202,7 @@
             if (event.target.classList.contains('modal')) {
                 toggleModal(event.target.id, false);
             }
-            // Cierra el menú de usuario si se hace clic fuera de él
-            if (!DOMElements.userMenu.hidden && !DOMElements.userMenu.contains(event.target) && !document.getElementById('userMenuBtn').contains(event.target)) {
-                toggleUserMenu(false);
-            }
         });
-    }
-
-    /**
-     * Muestra u oculta el menú desplegable del usuario.
-     * @param {boolean} [forceShow] - Fuerza la visualización o el ocultamiento del menú.
-     */
-    function toggleUserMenu(forceShow) {
-        const isHidden = DOMElements.userMenu.hidden;
-        DOMElements.userMenu.hidden = forceShow !== undefined ? !forceShow : !isHidden;
     }
 
     function updateDashboard() {
@@ -1010,6 +1001,28 @@
         event.preventDefault();
         const form = event.target;
         form.submit();
+    }
+
+    /**
+     * Muestra u oculta el menú lateral.
+     * @param {boolean} show - Indica si se debe mostrar u ocultar el menú.
+     */
+    function toggleSideMenu(show) {
+        const sideMenu = DOMElements.sideMenu;
+        if (show) {
+            sideMenu.hidden = false;
+            // Se usa un pequeño retardo para permitir que el navegador aplique `hidden = false`
+            // antes de añadir la clase que inicia la transición.
+            setTimeout(() => {
+                sideMenu.classList.add('is-open');
+            }, 10);
+        } else {
+            sideMenu.classList.remove('is-open');
+            // Espera a que la transición termine para ocultar el elemento
+            sideMenu.addEventListener('transitionend', () => {
+                sideMenu.hidden = true;
+            }, { once: true });
+        }
     }
 
 })();

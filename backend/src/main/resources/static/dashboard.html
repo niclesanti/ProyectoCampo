@@ -11,37 +11,56 @@
 </head>
 <body>
 
+    <!-- Menú Lateral (Off-canvas) -->
+    <aside id="sideMenu" class="side-menu" hidden>
+        <div id="sideMenuOverlay" class="side-menu__overlay"></div>
+        <div class="side-menu__content">
+            <div class="side-menu__header">
+                <button id="closeSideMenuBtn" class="side-menu__close-btn" aria-label="Cerrar menú">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="side-menu__brand">
+                <img src="/logo_login.png" alt="Logo CAMPITO" class="side-menu__logo-img">
+                <span class="side-menu__title">CAMPITO</span>
+            </div>
+            <nav class="side-menu__nav">
+                <a href="#" class="side-menu__nav-link side-menu__nav-link--active">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>Finanzas</span>
+                </a>
+                <a href="#" class="side-menu__nav-link">
+                    <i class="fas fa-tractor"></i>
+                    <span>Producción</span>
+                </a>
+            </nav>
+            <div class="side-menu__user-info">
+                <div class="side-menu__user-details">
+                    <span class="side-menu__username">Usuario Ejemplo</span>
+                    <span class="side-menu__email">usuario@ejemplo.com</span>
+                </div>
+                <a href="/logout" class="side-menu__logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
     <!-- Encabezado Principal -->
     <header class="header">
         <div class="header__content">
             <div class="header__left-section">
-                <div class="header__logo">
-                    <i class="fas fa-cow header__logo-icon"></i>
-                    <img src="/logo.png" alt="Logo CAMPITO" class="header__logo-img">
-                </div>
-                <nav class="header__nav">
-                    <button class="header__nav-btn">Finanzas</button>
-                    <button class="header__nav-btn">Producción</button>
-                </nav>
-            </div>
-            <div class="header__user-info">
-                <button id="userMenuBtn" class="header__logout-btn" aria-label="Abrir menú de usuario">
-                    <i class="fas fa-user"></i>
+                <button id="menuBtn" class="header__icon-btn" aria-label="Abrir menú">
+                    <i class="fas fa-bars"></i>
                 </button>
-
-                <!-- Menú Desplegable de Usuario -->
-                <div id="userMenu" class="user-menu" hidden>
-                    <div class="user-menu__header">
-                        <span class="user-menu__username">Usuario Ejemplo</span>
-                        <span class="user-menu__email">usuario@ejemplo.com</span>
-                    </div>
-                    <div class="user-menu__actions">
-                        <a href="/logout" class="btn btn--text btn--full-width">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Cerrar sesión
-                        </a>
-                    </div>
-                </div>
+            </div>
+            <div class="header__center-section">
+                <img src="/logo.png" alt="Logo CAMPITO" class="header__logo-img">
+            </div>
+            <div class="header__right-section">
+                <button id="notificationsBtn" class="header__icon-btn" aria-label="Ver notificaciones">
+                    <i class="fas fa-bell"></i>
+                </button>
             </div>
         </div>
     </header>
