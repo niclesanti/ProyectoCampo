@@ -131,4 +131,17 @@ public class TransaccionController {
         List<MotivoListadoDTO> motivos = transaccionService.listarMotivos(idEspacioTrabajo);
         return new ResponseEntity<>(motivos, HttpStatus.OK);
     }
+
+    @Operation(summary = "Buscar transacciones recientes",
+                description = "Busca las ultimas 5 transaciones realizadas en un espacio de trabajo.",
+                responses = {
+                    @ApiResponse(responseCode = "200", description = "Transacciones encontradas"),
+                    @ApiResponse(responseCode = "400", description = "Error en los criterios de búsqueda"),
+                    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+                })
+    @GetMapping("/buscarRecientes/{idEspacio}")
+    public ResponseEntity<List<TransaccionListadoDTO>> buscarTransaccionesRecientes(@PathVariable Long idEspacio) {
+        List<TransaccionListadoDTO> transacciones = transaccionService.buscarTransaccionesRecientes(idEspacio);
+        return new ResponseEntity<>(transacciones, HttpStatus.OK);
+    }
 }

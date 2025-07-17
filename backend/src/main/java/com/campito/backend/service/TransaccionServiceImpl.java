@@ -242,5 +242,28 @@ public class TransaccionServiceImpl implements TransaccionService {
                 ))
                 .toList();
     }
+
+    @Override
+    public List<TransaccionListadoDTO> buscarTransaccionesRecientes(Long idEspacioTrabajo) {
+        if (idEspacioTrabajo == null) {
+            throw new IllegalArgumentException("El id del espacio de trabajo no puede ser nulo");
+        }
+
+        // Zona horaria Buenos Aires
+        java.time.ZoneId buenosAiresZone = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
+        java.time.ZonedDateTime nowInBuenosAires = java.time.ZonedDateTime.now(buenosAiresZone);
+        java.time.LocalDateTime fechaActual = nowInBuenosAires.toLocalDateTime();
+
+        // Specification para filtrar por espacio de trabajo y fechaCreacion <= fechaActual
+        Specification<Transaccion> spec = (root, query, cb) -> cb.and(
+            cb.equal(root.get("espacioTrabajo").get("id"), idEspacioTrabajo),
+            cb.lessThanOrEqualTo(root.get("fechaCreacion"), fechaActual)
+        );
+
+        // Usar PageRequest para limitar y ordenar
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "fechaCreacion"));
+        List<Transaccion> transacciones = transaccionRepository.findAll(spec, pageable).getContent();
+        return crearListadoTransacciones(transacciones);
+    }
     
 }

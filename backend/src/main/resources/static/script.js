@@ -128,25 +128,8 @@
     }
 
     function loadSampleData() {
-        appState.transactions = [
-            { id: 1, type: 'income', amount: 50000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 10 novillos', date: '2024-05-15' },
-            { id: 2, type: 'expense', amount: 15000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-05-20' },
-            { id: 3, type: 'income', amount: 30000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-05-28' },
-            { id: 4, type: 'expense', amount: 8000, reason: 'Veterinario', recipient: 'Dr. García', description: 'Vacunación', date: '2024-06-10' },
-            { id: 5, type: 'expense', amount: 25000, reason: 'Mantenimiento', recipient: 'Taller Rural', description: 'Arreglo de tractor', date: '2024-06-18' },
-            { id: 6, type: 'income', amount: 32000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-06-28' },
-            { id: 7, type: 'income', amount: 75000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 15 terneros', date: '2024-07-12' },
-            { id: 8, type: 'expense', amount: 18000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-07-22' },
-            { id: 9, type: 'income', amount: 31000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-07-28' },
-            { id: 10, type: 'expense', amount: 12000, reason: 'Salarios', recipient: 'Personal', description: 'Pago de quincena', date: '2024-08-15' },
-            { id: 11, type: 'expense', amount: 45000, reason: 'Compra de equipos', recipient: 'Maquinaria SA', description: 'Compra de sembradora', date: '2024-08-25' },
-            { id: 12, type: 'income', amount: 33000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-08-28' },
-            { id: 13, type: 'expense', amount: 9000, reason: 'Impuestos', recipient: 'AFIP', description: 'Pago de impuestos', date: '2024-09-20' },
-            { id: 14, type: 'income', amount: 34000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-09-28' },
-            { id: 15, type: 'income', amount: 120000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 20 novillos', date: '2024-10-18' },
-            { id: 16, type: 'expense', amount: 20000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-10-25' },
-            { id: 17, type: 'income', amount: 35000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-10-28' }
-        ];
+        // Se elimina la carga de datos de ejemplo para que la lista inicie vacía.
+        appState.transactions = [];
     }
 
     function setupEventListeners() {
@@ -174,11 +157,14 @@
                     }
                     cargarMotivos(idEspacioTrabajo);
                     cargarContactos(idEspacioTrabajo);
+                    cargarTransaccionesRecientes(idEspacioTrabajo);
                 } else {
                     appState.currentBalance = 0;
                     updateBalance();
                     clearMotivos();
                     clearContactos();
+                    appState.transactions = [];
+                    renderRecentTransactions();
                 }
             });
         }
@@ -244,7 +230,7 @@
 
     function renderRecentTransactions() {
         const container = DOMElements.recentTransactionsList;
-        const recent = appState.transactions.slice(0, 5);
+        const recent = appState.transactions.slice(0, 6);
         renderTransactionList(container, recent);
     }
 
@@ -493,6 +479,25 @@
             }
 
             updateBalance();
+
+            // Añadir la nueva transacción a la lista de recientes
+            const reasonObj = appState.reasons.find(r => r.id == transaccionGuardada.idMotivo);
+            const contactObj = appState.contacts.find(c => c.id == transaccionGuardada.idContacto);
+            const newUITransaction = {
+                id: transaccionGuardada.id,
+                type: transaccionGuardada.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: transaccionGuardada.monto,
+                reason: reasonObj ? reasonObj.motivo : 'N/A',
+                recipient: contactObj ? contactObj.nombre : null,
+                description: transaccionGuardada.descripcion,
+                date: transaccionGuardada.fecha
+            };
+
+            appState.transactions.unshift(newUITransaction);
+            if (appState.transactions.length > 6) {
+                appState.transactions.pop();
+            }
+            renderRecentTransactions();
 
             toggleModal('transactionModal', false);
             showNotification('Transacción guardada con éxito', 'success');
@@ -914,6 +919,33 @@
 
     function handleSearchOrderChange() {
         applySearchOrder();
+    }
+
+    function cargarTransaccionesRecientes(idEspacioTrabajo) {
+        fetch(`/transaccion/buscarRecientes/${idEspacioTrabajo}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error al cargar las transacciones recientes.');
+        })
+        .then(transactions => {
+            appState.transactions = transactions.map(t => ({
+                id: t.id,
+                type: t.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: t.monto,
+                reason: t.nombreMotivo,
+                recipient: t.nombreContacto,
+                description: t.descripcion,
+                date: t.fecha
+            }));
+            renderRecentTransactions();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
+            DOMElements.recentTransactionsList.innerHTML = '<p class="transactions-list__empty">Error al cargar transacciones.</p>';
+        });
     }
 
     function applySearchOrder() {

@@ -18,4 +18,5 @@ public interface TransaccionService {
     public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO);
     public List<ContactoListadoDTO> listarContactos(Long idEspacioTrabajo);
     public List<MotivoListadoDTO> listarMotivos(Long idEspacioTrabajo);
+    public List<TransaccionListadoDTO> buscarTransaccionesRecientes(Long idEspacioTrabajo);
 }
