@@ -120,7 +120,7 @@
                 <p class="card__subtitle">Últimos 6 meses</p>
                 <canvas id="expensesChart"></canvas>
             </div>
-            <div class="card card--chart card--chart-full-width">
+            <div class="card card--chart">
                 <h3 class="card__title">Tendencia del saldo acumulado</h3>
                 <canvas id="balanceTrendChart"></canvas>
             </div>
@@ -151,63 +151,65 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="transactionForm" class="form">
-                <div class="form__group">
-                    <label for="transactionType" class="form__label">Tipo</label>
-                    <select id="transactionType" name="transactionType" class="form__select" required>
-                        <option value="income">Ingreso</option>
-                        <option value="expense">Gasto</option>
-                    </select>
-                </div>
-                <div class="form__group">
-                    <label for="transactionDate" class="form__label">Fecha</label>
-                    <input type="date" id="transactionDate" name="transactionDate" class="form__input" required>
-                </div>
-                <div class="form__group">
-                    <label for="amount" class="form__label">Monto ($)</label>
-                    <input type="number" id="amount" name="amount" step="0.01" class="form__input" required maxlength="15">
-                </div>
-                <div class="form__group">
-                    <label for="reason" class="form__label">Motivo</label>
-                    <div class="form__group--horizontal">
-                        <select id="reason" name="reason" class="form__select" required>
-                            <option value="">Seleccionar motivo</option>
+            <div class="modal__body">
+                <form id="transactionForm" class="form">
+                    <div class="form__group">
+                        <label for="transactionType" class="form__label">Tipo</label>
+                        <select id="transactionType" name="transactionType" class="form__select" required>
+                            <option value="income">Ingreso</option>
+                            <option value="expense">Gasto</option>
                         </select>
-                        <button type="button" id="newReasonBtn" class="btn btn--secondary btn--small">
-                            <i class="fas fa-plus"></i> Nuevo
-                        </button>
                     </div>
-                    <div id="newReasonForm" class="form__group--nested" hidden>
-                        <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
-                        <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
-                        <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                    <div class="form__group">
+                        <label for="transactionDate" class="form__label">Fecha</label>
+                        <input type="date" id="transactionDate" name="transactionDate" class="form__input" required>
                     </div>
-                </div>
-                <div class="form__group">
-                    <label for="recipient" class="form__label">Contacto emisor/destinatario (opcional)</label>
-                    <div class="form__group--horizontal">
-                        <select id="recipient" name="recipient" class="form__select">
-                            <option value="">Seleccionar contacto</option>
-                        </select>
-                        <button type="button" id="newContactBtn" class="btn btn--secondary btn--small">
-                            <i class="fas fa-plus"></i> Nuevo
-                        </button>
+                    <div class="form__group">
+                        <label for="amount" class="form__label">Monto ($)</label>
+                        <input type="number" id="amount" name="amount" step="0.01" class="form__input" required maxlength="15">
                     </div>
-                    <div id="newContactForm" class="form__group--nested" hidden>
-                        <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
-                        <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
-                        <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                    <div class="form__group">
+                        <label for="reason" class="form__label">Motivo</label>
+                        <div class="form__group--horizontal">
+                            <select id="reason" name="reason" class="form__select" required>
+                                <option value="">Seleccionar motivo</option>
+                            </select>
+                            <button type="button" id="newReasonBtn" class="btn btn--secondary btn--small">
+                                <i class="fas fa-plus"></i> Nuevo
+                            </button>
+                        </div>
+                        <div id="newReasonForm" class="form__group--nested" hidden>
+                            <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
+                            <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
+                            <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                        </div>
                     </div>
-                </div>
-                <div class="form__group">
-                    <label for="description" class="form__label">Descripción (opcional)</label>
-                    <textarea id="description" name="description" rows="3" class="form__textarea" maxlength="100"></textarea>
-                </div>
-                <div class="form__actions">
-                    <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
-                    <button type="submit" class="btn btn--primary">Guardar transacción</button>
-                </div>
-            </form>
+                    <div class="form__group">
+                        <label for="recipient" class="form__label">Contacto emisor/destinatario (opcional)</label>
+                        <div class="form__group--horizontal">
+                            <select id="recipient" name="recipient" class="form__select">
+                                <option value="">Seleccionar contacto</option>
+                            </select>
+                            <button type="button" id="newContactBtn" class="btn btn--secondary btn--small">
+                                <i class="fas fa-plus"></i> Nuevo
+                            </button>
+                        </div>
+                        <div id="newContactForm" class="form__group--nested" hidden>
+                            <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
+                            <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
+                            <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                        </div>
+                    </div>
+                    <div class="form__group">
+                        <label for="description" class="form__label">Descripción (opcional)</label>
+                        <textarea id="description" name="description" rows="3" class="form__textarea" maxlength="100"></textarea>
+                    </div>
+                    <div class="form__actions">
+                        <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
+                        <button type="submit" class="btn btn--primary">Guardar transacción</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -220,61 +222,63 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="searchForm" class="form">
-                <div class="form__group--grid">
-                    <div class="form__group">
-                        <label for="searchMonth" class="form__label">Mes</label>
-                        <select id="searchMonth" name="searchMonth" class="form__select">
-                            <option value="">Todos</option>
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
-                        </select>
+            <div class="modal__body">
+                <form id="searchForm" class="form">
+                    <div class="form__group--grid">
+                        <div class="form__group">
+                            <label for="searchMonth" class="form__label">Mes</label>
+                            <select id="searchMonth" name="searchMonth" class="form__select">
+                                <option value="">Todos</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="form__group">
+                            <label for="searchYear" class="form__label">Año</label>
+                            <input type="text" id="searchYear" name="searchYear" class="form__input">
+                        </div>
+                        <div class="form__group">
+                            <label for="searchReason" class="form__label">Motivo</label>
+                            <select id="searchReason" name="searchReason" class="form__select">
+                                <option value="">Seleccionar motivo</option>
+                            </select>
+                        </div>
+                        <div class="form__group">
+                            <label for="searchRecipient" class="form__label">Contacto</label>
+                            <select id="searchRecipient" name="searchRecipient" class="form__select">
+                                <option value="">Seleccionar contacto</option>
+                            </select>
+                        </div>
+                        <div class="form__group">
+                            <label for="orderBy" class="form__label">Ordenar por</label>
+                            <select id="orderBy" name="orderBy" class="form__select">
+                                <option value="date-desc">Fecha (más recientes)</option>
+                                <option value="date-asc">Fecha (más antiguas)</option>
+                                <option value="amount-desc">Monto (mayor a menor)</option>
+                                <option value="amount-asc">Monto (menor a mayor)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form__group">
-                        <label for="searchYear" class="form__label">Año</label>
-                        <input type="text" id="searchYear" name="searchYear" class="form__input">
+                    <div class="form__actions">
+                        <button type="button" id="clearSearchBtn" class="btn btn--secondary">Limpiar</button>
+                        <button type="submit" class="btn btn--primary">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
                     </div>
-                    <div class="form__group">
-                        <label for="searchReason" class="form__label">Motivo</label>
-                        <select id="searchReason" name="searchReason" class="form__select">
-                            <option value="">Seleccionar motivo</option>
-                        </select>
-                    </div>
-                    <div class="form__group">
-                        <label for="searchRecipient" class="form__label">Contacto</label>
-                        <select id="searchRecipient" name="searchRecipient" class="form__select">
-                            <option value="">Seleccionar contacto</option>
-                        </select>
-                    </div>
-                    <div class="form__group">
-                        <label for="orderBy" class="form__label">Ordenar por</label>
-                        <select id="orderBy" name="orderBy" class="form__select">
-                            <option value="date-desc">Fecha (más recientes)</option>
-                            <option value="date-asc">Fecha (más antiguas)</option>
-                            <option value="amount-desc">Monto (mayor a menor)</option>
-                            <option value="amount-asc">Monto (menor a mayor)</option>
-                        </select>
-                    </div>
+                </form>
+                <div id="searchResults" class="search-results">
+                    <!-- Los resultados de la búsqueda se mostrarán aquí -->
                 </div>
-                <div class="form__actions">
-                    <button type="button" id="clearSearchBtn" class="btn btn--secondary">Limpiar</button>
-                    <button type="submit" class="btn btn--primary">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
-                </div>
-            </form>
-            <div id="searchResults" class="search-results">
-                <!-- Los resultados de la búsqueda se mostrarán aquí -->
             </div>
         </div>
     </div>
@@ -288,26 +292,28 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="budgetForm" class="form">
-                <div class="form__group">
-                    <label for="budgetReason" class="form__label">Motivo</label>
-                    <select id="budgetReason" name="budgetReason" class="form__select" required>
-                        <option value="">Seleccionar motivo</option>
-                    </select>
-                </div>
-                <div class="form__group">
-                    <label for="budgetThreshold" class="form__label">Monto de alerta ($)</label>
-                    <input type="number" id="budgetThreshold" name="budgetThreshold" step="0.01" class="form__input" required>
-                </div>
-                <div class="form__actions">
-                    <button type="button" id="cancelBudgetBtn" class="btn btn--secondary">Cancelar</button>
-                    <button type="submit" class="btn btn--primary">Guardar alerta</button>
-                </div>
-            </form>
-            <div class="alerts-list-container">
-                <h3 class="alerts-list__title">Alertas configuradas</h3>
-                <div id="alertsList" class="alerts-list">
-                    <!-- Las alertas se cargarán aquí -->
+            <div class="modal__body">
+                <form id="budgetForm" class="form">
+                    <div class="form__group">
+                        <label for="budgetReason" class="form__label">Motivo</label>
+                        <select id="budgetReason" name="budgetReason" class="form__select" required>
+                            <option value="">Seleccionar motivo</option>
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="budgetThreshold" class="form__label">Monto de alerta ($)</label>
+                        <input type="number" id="budgetThreshold" name="budgetThreshold" step="0.01" class="form__input" required>
+                    </div>
+                    <div class="form__actions">
+                        <button type="button" id="cancelBudgetBtn" class="btn btn--secondary">Cancelar</button>
+                        <button type="submit" class="btn btn--primary">Guardar alerta</button>
+                    </div>
+                </form>
+                <div class="alerts-list-container">
+                    <h3 class="alerts-list__title">Alertas configuradas</h3>
+                    <div id="alertsList" class="alerts-list">
+                        <!-- Las alertas se cargarán aquí -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -322,19 +328,21 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="workspaceForm" class="form">
-                <div class="form__group">
-                    <label for="workspaceName" class="form__label">Nombre del espacio</label>
-                    <div class="form__input-container">
-                        <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
-                        <span id="workspaceNameError" class="form__error-message" hidden>*</span>
+            <div class="modal__body">
+                <form id="workspaceForm" class="form">
+                    <div class="form__group">
+                        <label for="workspaceName" class="form__label">Nombre del espacio</label>
+                        <div class="form__input-container">
+                            <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
+                            <span id="workspaceNameError" class="form__error-message" hidden>*</span>
+                        </div>
                     </div>
-                </div>
-                <div class="form__actions">
-                    <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
-                    <button type="submit" class="btn btn--primary">Guardar espacio</button>
-                </div>
-            </form>
+                    <div class="form__actions">
+                        <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
+                        <button type="submit" class="btn btn--primary">Guardar espacio</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -347,23 +355,25 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="shareForm" class="form">
-                <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
-                <div class="form__group">
-                    <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
-                    <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
-                        <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
-                    </select>
-                </div>
-                <div class="form__group">
-                    <label for="shareEmail" class="form__label">Email del invitado</label>
-                    <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
-                </div>
-                <div class="form__actions">
-                    <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
-                    <button type="submit" class="btn btn--primary">Enviar invitación</button>
-                </div>
-            </form>
+            <div class="modal__body">
+                <form id="shareForm" class="form">
+                    <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
+                    <div class="form__group">
+                        <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
+                        <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
+                            <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="form__group">
+                        <label for="shareEmail" class="form__label">Email del invitado</label>
+                        <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
+                    </div>
+                    <div class="form__actions">
+                        <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
+                        <button type="submit" class="btn btn--primary">Enviar invitación</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
