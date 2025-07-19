@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.campito.backend.dto.ContactoDTO;
 import com.campito.backend.dto.ContactoListadoDTO;
+import com.campito.backend.dto.DashboardInfoDTO;
 import com.campito.backend.dto.MotivoDTO;
 import com.campito.backend.dto.MotivoListadoDTO;
 import com.campito.backend.dto.TransaccionBusquedaDTO;
@@ -143,5 +144,18 @@ public class TransaccionController {
     public ResponseEntity<List<TransaccionListadoDTO>> buscarTransaccionesRecientes(@PathVariable Long idEspacio) {
         List<TransaccionListadoDTO> transacciones = transaccionService.buscarTransaccionesRecientes(idEspacio);
         return new ResponseEntity<>(transacciones, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Obtener información del dashboard",
+                description = "Obtiene la información necesaria para el dashboard de un espacio de trabajo.",
+                responses = {
+                    @ApiResponse(responseCode = "200", description = "Información del dashboard obtenida correctamente"),
+                    @ApiResponse(responseCode = "404", description = "Espacio de trabajo no encontrado"),
+                    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+                })
+    @GetMapping("/dashboardinfo/{idEspacio}")
+    public ResponseEntity<DashboardInfoDTO> obtenerDashboardInfo(@PathVariable Long idEspacio) {
+        DashboardInfoDTO dashboardInfo = transaccionService.obtenerDashboardInfo(idEspacio);
+        return new ResponseEntity<>(dashboardInfo, HttpStatus.OK);
     }
 }

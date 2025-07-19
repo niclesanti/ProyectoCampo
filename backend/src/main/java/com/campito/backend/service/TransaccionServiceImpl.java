@@ -1,5 +1,7 @@
 package com.campito.backend.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -10,13 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.campito.backend.dao.ContactoTransferenciaRepository;
+import com.campito.backend.dao.DashboardRepository;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 import com.campito.backend.dao.MotivoTransaccionRepository;
 import com.campito.backend.dao.TransaccionRepository;
 import com.campito.backend.dto.ContactoDTO;
 import com.campito.backend.dto.ContactoListadoDTO;
+import com.campito.backend.dto.DashboardInfoDTO;
+import com.campito.backend.dto.DistribucionGastoDTO;
+import com.campito.backend.dto.IngresosGastosMesDTO;
 import com.campito.backend.dto.MotivoDTO;
 import com.campito.backend.dto.MotivoListadoDTO;
+import com.campito.backend.dto.SaldoAcumuladoMesDTO;
 import com.campito.backend.dto.TransaccionBusquedaDTO;
 import com.campito.backend.dto.TransaccionDTO;
 import com.campito.backend.dto.TransaccionListadoDTO;
@@ -35,17 +42,20 @@ public class TransaccionServiceImpl implements TransaccionService {
     private final EspacioTrabajoRepository espacioRepository;
     private final MotivoTransaccionRepository motivoRepository;
     private final ContactoTransferenciaRepository contactoRepository;
+    private final DashboardRepository dashboardRepository;
 
     @Autowired
     public TransaccionServiceImpl(
         TransaccionRepository transaccionRepository,
         EspacioTrabajoRepository espacioRepository,
         MotivoTransaccionRepository motivoRepository,
-        ContactoTransferenciaRepository contactoRepository) {
+        ContactoTransferenciaRepository contactoRepository,
+        DashboardRepository dashboardRepository) {
         this.transaccionRepository = transaccionRepository;
         this.espacioRepository = espacioRepository;
         this.motivoRepository = motivoRepository;
         this.contactoRepository = contactoRepository;
+        this.dashboardRepository = dashboardRepository;
     }
 
     @Override
@@ -264,6 +274,49 @@ public class TransaccionServiceImpl implements TransaccionService {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "fechaCreacion"));
         List<Transaccion> transacciones = transaccionRepository.findAll(spec, pageable).getContent();
         return crearListadoTransacciones(transacciones);
+    }
+
+    @Override
+    public DashboardInfoDTO obtenerDashboardInfo(Long idEspacio) {
+        
+        LocalDate fechaLimite = LocalDate.now().minusMonths(6);
+
+        // Generar lista de los últimos 6 meses en formato YYYY-MM
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> ultimosMeses = new java.util.ArrayList<>();
+        LocalDate actual = LocalDate.now();
+        for (int i = 5; i >= 0; i--) {
+            ultimosMeses.add(actual.minusMonths(i).format(formatter));
+        }
+
+        List<IngresosGastosMesDTO> ingresosGastosMes = dashboardRepository.findIngresosVsGastos(idEspacio, fechaLimite);
+        java.util.Map<String, IngresosGastosMesDTO> mapIngresosGastos = new java.util.HashMap<>();
+        for (IngresosGastosMesDTO dto : ingresosGastosMes) {
+            mapIngresosGastos.put(dto.getMes(), dto);
+        }
+        List<IngresosGastosMesDTO> ingresosGastosMesCompletos = new java.util.ArrayList<>();
+        for (String mes : ultimosMeses) {
+            ingresosGastosMesCompletos.add(mapIngresosGastos.getOrDefault(mes, new com.campito.backend.dto.IngresosGastosMesDTOImpl(mes, BigDecimal.ZERO, BigDecimal.ZERO)));
+        }
+
+        List<SaldoAcumuladoMesDTO> saldosAcumulados = dashboardRepository.findSaldosAcumulados(idEspacio, fechaLimite);
+        java.util.Map<String, SaldoAcumuladoMesDTO> mapSaldos = new java.util.HashMap<>();
+        for (SaldoAcumuladoMesDTO dto : saldosAcumulados) {
+            mapSaldos.put(dto.getMes(), dto);
+        }
+        List<SaldoAcumuladoMesDTO> saldosAcumuladosCompletos = new java.util.ArrayList<>();
+        for (String mes : ultimosMeses) {
+            saldosAcumuladosCompletos.add(mapSaldos.getOrDefault(mes, new com.campito.backend.dto.SaldoAcumuladoMesDTOImpl(mes, BigDecimal.ZERO)));
+        }
+
+        // Distribucion de gastos: solo motivos con datos, no se puede completar motivos sin datos sin una lista de motivos
+        List<DistribucionGastoDTO> distribucionGastos = dashboardRepository.findDistribucionGastos(idEspacio, fechaLimite);
+
+        return new DashboardInfoDTO(
+            ingresosGastosMesCompletos,
+            distribucionGastos,
+            saldosAcumuladosCompletos
+        );
     }
     
 }

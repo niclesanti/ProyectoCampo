@@ -23,6 +23,7 @@
             expenses: null,
             balanceTrend: null
         },
+        dashboardCache: {},
         lastSearchResults: [],
         currentBalance: 0,
     };
@@ -162,6 +163,7 @@
                     cargarMotivos(idEspacioTrabajo);
                     cargarContactos(idEspacioTrabajo);
                     cargarTransaccionesRecientes(idEspacioTrabajo);
+                    actualizarDashboard(idEspacioTrabajo); // <-- AÑADIDO
                 } else {
                     appState.currentBalance = 0;
                     updateBalance();
@@ -169,6 +171,16 @@
                     clearContactos();
                     appState.transactions = [];
                     renderRecentTransactions();
+                    // Limpiar gráficos si no hay espacio seleccionado
+                    Object.values(appState.charts).forEach(chart => {
+                        if (chart) {
+                            chart.data.labels = [];
+                            chart.data.datasets.forEach(dataset => {
+                                dataset.data = [];
+                            });
+                            chart.update();
+                        }
+                    });
                 }
             });
         }
@@ -281,29 +293,19 @@
 
     function createMonthlyChart() {
         const ctx = document.getElementById('monthlyChart').getContext('2d');
-        const data = { labels: ['Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], datasets: [ { label: 'Ingresos', data: [45000, 52000, 48000, 55000, 50000, 80000], backgroundColor: '#3B82F6' }, { label: 'Gastos', data: [35000, 38000, 42000, 40000, 45000, 43000], backgroundColor: '#03324F' } ] };
+        const data = { labels: [], datasets: [ { label: 'Ingresos', data: [], backgroundColor: '#3B82F6' }, { label: 'Gastos', data: [], backgroundColor: '#03324F' } ] };
         appState.charts.monthly = new Chart(ctx, { type: 'bar', data, options: getChartOptions() });
     }
 
     function createExpensesChart() {
         const ctx = document.getElementById('expensesChart').getContext('2d');
-        const expenseData = appState.transactions.filter(t => t.type === 'expense').reduce((acc, t) => {
-            acc[t.reason] = (acc[t.reason] || 0) + t.amount;
-            return acc;
-        }, {});
-
-        const numCategories = Object.keys(expenseData).length;
-        if (numCategories === 0) return;
-
-        const generatedColors = generateBluePalette(numCategories);
-
         const data = { 
-            labels: Object.keys(expenseData), 
+            labels: [], 
             datasets: [{ 
-                data: Object.values(expenseData), 
-                backgroundColor: generatedColors
+                data: [], 
+                backgroundColor: []
             }] 
-        };
+        }; 
         appState.charts.expenses = new Chart(ctx, { type: 'doughnut', data, options: getChartOptions('doughnut') });
     }
 
@@ -329,14 +331,7 @@
 
     function createBalanceTrendChart() {
         const ctx = document.getElementById('balanceTrendChart').getContext('2d');
-        const sorted = [...appState.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-        let accumulated = 0;
-        const trendData = sorted.map(t => {
-            accumulated += t.type === 'income' ? t.amount : -t.amount;
-            return { x: t.date, y: accumulated };
-        });
-        if (trendData.length === 0) return;
-        const data = { datasets: [{ label: 'Saldo Acumulado', data: trendData, borderColor: '#03324F', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
+        const data = { labels: [], datasets: [{ label: 'Saldo Acumulado', data: [], borderColor: '#03324F', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
         appState.charts.balanceTrend = new Chart(ctx, { type: 'line', data, options: getChartOptions('line') });
     }
 
@@ -356,14 +351,10 @@
         if (type === 'line') {
             options.scales = {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                        tooltipFormat: 'dd MMM yyyy'
-                    },
+                    type: 'category', // Corregido de 'time' a 'category'
                     title: {
                         display: true,
-                        text: 'Fecha'
+                        text: 'Mes' // Cambiado de 'Fecha' a 'Mes'
                     }
                 },
                 y: {
@@ -418,7 +409,7 @@
         const description = formData.get('description');
 
         const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
-        const nombreCompletoAuditoria = document.querySelector('.user-menu__username').textContent; // Obtener del menú de usuario
+        const nombreCompletoAuditoria = document.querySelector('.side-menu__username').textContent; // Obtener del menú de usuario
 
         // Validaciones de campos obligatorios
         if (!idEspacioTrabajo) {
@@ -489,6 +480,12 @@
                 appState.transactions.pop();
             }
             renderRecentTransactions();
+
+            // Invalidar la caché para este espacio de trabajo
+            delete appState.dashboardCache[currentWorkspaceId];
+
+            // Actualizar el dashboard con los nuevos datos
+            actualizarDashboard(currentWorkspaceId);
 
             toggleModal('transactionModal', false);
             showNotification('Transacción guardada con éxito', 'success');
@@ -973,7 +970,108 @@
         alert(`Detalles de la Transacción:\n\n${details}`);
     }
 
-    
+    /**
+     * Convierte una fecha en formato 'YYYY-MM' a un nombre de mes abreviado en español.
+     * @param {string} fechaString - La fecha en formato 'YYYY-MM'.
+     * @returns {string} El nombre del mes abreviado (ej: 'Ene').
+     */
+    function formatearMes(fechaString) {
+        const [year, month] = fechaString.split('-');
+        const fecha = new Date(year, month - 1);
+        return fecha.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+    }
+
+    /**
+     * Obtiene los datos del dashboard desde la API y actualiza los gráficos.
+     * @param {number} idEspacio - El ID del espacio de trabajo.
+     */
+    function actualizarDashboard(idEspacio) {
+        if (!idEspacio) return;
+
+        // 1. Comprobar la caché primero
+        if (appState.dashboardCache[idEspacio]) {
+            const cachedData = appState.dashboardCache[idEspacio];
+            actualizarGraficoIngresosGastos(cachedData.ingresosGastos);
+            actualizarGraficoDistribucionGastos(cachedData.distribucionGastos);
+            actualizarGraficoTendenciaSaldo(cachedData.saldoAcumuladoMes);
+            showNotification('Datos del dashboard cargados desde caché', 'info');
+            return; // Salir de la función si los datos están en caché
+        }
+
+        // 2. Si no están en caché, hacer la llamada a la API
+        fetch(`/transaccion/dashboardinfo/${idEspacio}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los datos del dashboard.');
+                }
+                return response.json();
+            })
+            .then(dashboardData => {
+                // 3. Guardar los datos en la caché
+                appState.dashboardCache[idEspacio] = dashboardData;
+
+                // 4. Actualizar los gráficos
+                actualizarGraficoIngresosGastos(dashboardData.ingresosGastos);
+                actualizarGraficoDistribucionGastos(dashboardData.distribucionGastos);
+                actualizarGraficoTendenciaSaldo(dashboardData.saldoAcumuladoMes);
+            })
+            .catch(error => {
+                console.error('Error al actualizar el dashboard:', error);
+                showNotification('Error al cargar los datos del dashboard', 'error');
+            });
+    }
+
+    /**
+     * Actualiza el gráfico de ingresos vs. gastos.
+     * @param {Array<object>} data - Los datos de ingresos y gastos por mes.
+     */
+    function actualizarGraficoIngresosGastos(data) {
+        const chart = appState.charts.monthly;
+        if (!chart) return;
+
+        const labels = data.map(d => formatearMes(d.mes));
+        const ingresos = data.map(d => d.ingresos);
+        const gastos = data.map(d => d.gastos);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = ingresos;
+        chart.data.datasets[1].data = gastos;
+        chart.update();
+    }
+
+    /**
+     * Actualiza el gráfico de distribución de gastos.
+     * @param {Array<object>} data - Los datos de distribución de gastos por motivo.
+     */
+    function actualizarGraficoDistribucionGastos(data) {
+        const chart = appState.charts.expenses;
+        if (!chart) return;
+
+        const labels = data.map(d => d.motivo);
+        const porcentajes = data.map(d => d.porcentaje);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = porcentajes;
+        // Generar nuevos colores para la cantidad actual de categorías
+        chart.data.datasets[0].backgroundColor = generateBluePalette(labels.length);
+        chart.update();
+    }
+
+    /**
+     * Actualiza el gráfico de tendencia de saldo acumulado.
+     * @param {Array<object>} data - Los datos de saldo acumulado por mes.
+     */
+    function actualizarGraficoTendenciaSaldo(data) {
+        const chart = appState.charts.balanceTrend;
+        if (!chart) return;
+
+        const labels = data.map(d => formatearMes(d.mes));
+        const saldos = data.map(d => d.saldoAcumulado);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = saldos;
+        chart.update();
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('loginForm')) {
