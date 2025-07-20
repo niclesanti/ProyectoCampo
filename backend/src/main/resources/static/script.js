@@ -60,6 +60,8 @@
         balanceAmount: document.querySelector('.balance__value'),
         balanceContainer: document.querySelector('.balance__amount'),
         balanceDate: document.querySelector('.balance__date'),
+        transactionDetailModal: document.getElementById('transactionDetailModal'),
+        transactionDetailContent: document.getElementById('transactionDetailContent'),
     };
 
     function initializeApp() {
@@ -195,6 +197,10 @@
         document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('shareModal', false));
 
+        // Listeners para el nuevo modal de detalle
+        document.getElementById('closeTransactionDetailModalBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
+        document.getElementById('backTransactionDetailBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
+
         // Envíos de formularios
         DOMElements.transactionForm.addEventListener('submit', handleTransactionSubmit);
         DOMElements.searchForm.addEventListener('submit', handleSearchSubmit);
@@ -265,7 +271,7 @@
                 ${isIncome ? '+' : '-'}${transaction.amount.toLocaleString('es-AR')}
             </div>
         `;
-        item.addEventListener('click', () => showTransactionDetails(transaction));
+        item.addEventListener('click', () => showTransactionDetails(transaction.id));
         return item;
     }
 
@@ -472,7 +478,9 @@
                 reason: reasonObj ? reasonObj.motivo : 'N/A',
                 recipient: contactObj ? contactObj.nombre : null,
                 description: transaccionGuardada.descripcion,
-                date: transaccionGuardada.fecha
+                date: transaccionGuardada.fecha,
+                fechaCreacion: transaccionGuardada.fechaCreacion, // Corregido: Añadir fecha de creación
+                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria // Corregido: Añadir usuario de auditoría
             };
 
             appState.transactions.unshift(newUITransaction);
@@ -494,6 +502,80 @@
             console.error('Error:', error);
             showNotification('Error al guardar la transacción', 'error');
         });
+    }
+
+    function showTransactionDetails(transactionId) {
+        DOMElements.transactionDetailContent.innerHTML = ''; // Limpiar contenido anterior
+        const transaction = appState.transactions.find(t => t.id === transactionId) || appState.lastSearchResults.find(t => t.id === transactionId);
+
+        if (!transaction) {
+            showNotification('No se pudo encontrar la transacción.', 'error');
+            return;
+        }
+
+        const content = DOMElements.transactionDetailContent;
+        const isIncome = transaction.type === 'income';
+
+        const formattedDate = new Date(transaction.date).toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        let auditHTML = '';
+        if (transaction.fechaCreacion && transaction.nombreCompletoAuditoria) {
+            const formattedCreationDate = new Date(transaction.fechaCreacion).toLocaleString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            auditHTML = `
+                <h3 class="transaction-detail__audit-title">Auditoría</h3>
+                <div class="transaction-detail__item">
+                    <span class="transaction-detail__label">Fecha de Creación</span>
+                    <span class="transaction-detail__value">${formattedCreationDate} hs</span>
+                </div>
+                <div class="transaction-detail__item">
+                    <span class="transaction-detail__label">Usuario</span>
+                    <span class="transaction-detail__value">${transaction.nombreCompletoAuditoria}</span>
+                </div>
+            `;
+        }
+
+        content.innerHTML = `
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Tipo</span>
+                <span class="transaction-detail__value ${isIncome ? 'transaction-detail__value--income' : 'transaction-detail__value--expense'}">${isIncome ? 'Ingreso' : 'Gasto'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Fecha</span>
+                <span class="transaction-detail__value">${formattedDate}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Motivo</span>
+                <span class="transaction-detail__value">${transaction.reason}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Contacto</span>
+                <span class="transaction-detail__value">${transaction.recipient || '-'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Descripción</span>
+                <span class="transaction-detail__value">${transaction.description || '-'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Monto</span>
+                <span class="transaction-detail__value ${isIncome ? 'transaction-detail__value--income' : 'transaction-detail__value--expense'}">
+                    $ ${transaction.amount.toLocaleString('es-AR')}
+                </span>
+            </div>
+            ${auditHTML}
+        `;
+
+        toggleModal('transactionDetailModal', true);
     }
 
     function handleSearchSubmit(event) {
@@ -537,7 +619,9 @@
                 reason: t.nombreMotivo,
                 recipient: t.nombreContacto,
                 description: t.descripcion,
-                date: t.fecha
+                date: t.fecha,
+                fechaCreacion: t.fechaCreacion,
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria
             }));
             applySearchOrder();
             showNotification(`Se encontraron ${transactions.length} transacciones.`, 'success');
@@ -925,7 +1009,9 @@
                 reason: t.nombreMotivo,
                 recipient: t.nombreContacto,
                 description: t.descripcion,
-                date: t.fecha
+                date: t.fecha,
+                fechaCreacion: t.fechaCreacion,
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria
             }));
             renderRecentTransactions();
         })
@@ -958,17 +1044,7 @@
         }, 3000);
     }
 
-    function showTransactionDetails(transaction) {
-        const details = `
-            Tipo: ${transaction.type}
-            Monto: ${transaction.amount.toLocaleString('es-AR')}
-            Motivo: ${transaction.reason}
-            Fecha: ${new Date(transaction.date).toLocaleDateString('es-AR')}
-            Contacto: ${transaction.recipient || 'N/A'}
-            Descripción: ${transaction.description || 'N/A'}
-        `;
-        alert(`Detalles de la Transacción:\n\n${details}`);
-    }
+    
 
     /**
      * Convierte una fecha en formato 'YYYY-MM' a un nombre de mes abreviado en español.

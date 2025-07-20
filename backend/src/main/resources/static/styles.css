@@ -1109,6 +1109,51 @@ body {
     background-color: rgba(239, 68, 68, 0.1);
 }
 
+/* Detalle de Transacción en Modal */
+.transaction-detail {
+    padding: 1rem 0;
+}
+
+.transaction-detail__item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.transaction-detail__item:last-child {
+    border-bottom: none;
+}
+
+.transaction-detail__label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.transaction-detail__value {
+    color: var(--color-text-secondary);
+    text-align: right;
+}
+
+.transaction-detail__value--income {
+    color: var(--color-text-saldo-positivo);
+    font-weight: 600;
+}
+
+.transaction-detail__value--expense {
+    color: var(--color-text-saldo-negativo);
+    font-weight: 600;
+}
+
+.transaction-detail__audit-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
 
 /* 7. Media Queries (Diseño Responsivo)
 -------------------------------------------------------------------*/

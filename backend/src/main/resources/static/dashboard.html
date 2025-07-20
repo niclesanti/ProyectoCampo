@@ -379,6 +379,26 @@
 
     <!-- Contenedor para Notificaciones -->
     <div id="notification-container" class="notification-container"></div>
+
+    <!-- Modal: Detalle de Transacción -->
+    <div id="transactionDetailModal" class="modal" hidden>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">Detalle de la transacción</h2>
+                <button id="closeTransactionDetailModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal__body">
+                <div id="transactionDetailContent" class="transaction-detail">
+                    <!-- El contenido se llenará dinámicamente -->
+                </div>
+                <div class="form__actions">
+                    <button type="button" id="backTransactionDetailBtn" class="btn btn--secondary">Volver</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
