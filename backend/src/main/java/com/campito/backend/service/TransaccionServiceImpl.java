@@ -1,5 +1,7 @@
 package com.campito.backend.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -10,13 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.campito.backend.dao.ContactoTransferenciaRepository;
+import com.campito.backend.dao.DashboardRepository;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 import com.campito.backend.dao.MotivoTransaccionRepository;
 import com.campito.backend.dao.TransaccionRepository;
 import com.campito.backend.dto.ContactoDTO;
 import com.campito.backend.dto.ContactoListadoDTO;
+import com.campito.backend.dto.DashboardInfoDTO;
+import com.campito.backend.dto.DistribucionGastoDTO;
+import com.campito.backend.dto.IngresosGastosMesDTO;
 import com.campito.backend.dto.MotivoDTO;
 import com.campito.backend.dto.MotivoListadoDTO;
+import com.campito.backend.dto.SaldoAcumuladoMesDTO;
 import com.campito.backend.dto.TransaccionBusquedaDTO;
 import com.campito.backend.dto.TransaccionDTO;
 import com.campito.backend.dto.TransaccionListadoDTO;
@@ -35,22 +42,25 @@ public class TransaccionServiceImpl implements TransaccionService {
     private final EspacioTrabajoRepository espacioRepository;
     private final MotivoTransaccionRepository motivoRepository;
     private final ContactoTransferenciaRepository contactoRepository;
+    private final DashboardRepository dashboardRepository;
 
     @Autowired
     public TransaccionServiceImpl(
         TransaccionRepository transaccionRepository,
         EspacioTrabajoRepository espacioRepository,
         MotivoTransaccionRepository motivoRepository,
-        ContactoTransferenciaRepository contactoRepository) {
+        ContactoTransferenciaRepository contactoRepository,
+        DashboardRepository dashboardRepository) {
         this.transaccionRepository = transaccionRepository;
         this.espacioRepository = espacioRepository;
         this.motivoRepository = motivoRepository;
         this.contactoRepository = contactoRepository;
+        this.dashboardRepository = dashboardRepository;
     }
 
     @Override
     @Transactional
-    public void registrarTransaccion(TransaccionDTO transaccionDTO) {
+    public TransaccionDTO registrarTransaccion(TransaccionDTO transaccionDTO) {
         if(transaccionDTO == null) {
             throw new IllegalArgumentException("La transaccion no puede ser nula");
         }
@@ -92,7 +102,17 @@ public class TransaccionServiceImpl implements TransaccionService {
         }
 
         transaccionRepository.save(transaccion);
-
+        return new TransaccionDTO(
+            transaccion.getId(),
+            transaccion.getFecha(),
+            transaccion.getMonto(),
+            transaccion.getTipo(),
+            transaccion.getDescripcion() != null ? transaccion.getDescripcion() : null,
+            transaccion.getNombreCompletoAuditoria(),
+            transaccion.getEspacioTrabajo().getId(),
+            transaccion.getMotivo().getId(),
+            transaccion.getContacto() != null ? transaccion.getContacto().getId() : null
+        );
     }
 
     @Override
@@ -159,7 +179,7 @@ public class TransaccionServiceImpl implements TransaccionService {
 
     @Override
     @Transactional
-    public void registrarContactoTransferencia(ContactoDTO contactoDTO) {
+    public ContactoDTO registrarContactoTransferencia(ContactoDTO contactoDTO) {
         if(contactoDTO == null || contactoDTO.nombre() == null || contactoDTO.nombre().isEmpty()) {
             throw new IllegalArgumentException("El contacto no puede ser nulo");
         }
@@ -170,11 +190,12 @@ public class TransaccionServiceImpl implements TransaccionService {
         contacto.setEspacioTrabajo(espacio);
 
         contactoRepository.save(contacto);
+        return new ContactoDTO(contacto.getId(), contacto.getNombre(), contacto.getEspacioTrabajo().getId());
     }
 
     @Override
     @Transactional
-    public void nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
+    public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
         if(motivoDTO == null || motivoDTO.motivo() == null || motivoDTO.motivo().isEmpty()) {
             throw new IllegalArgumentException("El motivo no puede ser nulo");
         }
@@ -185,6 +206,7 @@ public class TransaccionServiceImpl implements TransaccionService {
         motivo.setEspacioTrabajo(espacio);
 
         motivoRepository.save(motivo);
+        return new MotivoDTO(motivo.getId(), motivo.getMotivo(), motivo.getEspacioTrabajo().getId());
     }
 
     @Override
@@ -229,6 +251,72 @@ public class TransaccionServiceImpl implements TransaccionService {
                     t.getContacto() != null ? t.getContacto().getNombre() : null
                 ))
                 .toList();
+    }
+
+    @Override
+    public List<TransaccionListadoDTO> buscarTransaccionesRecientes(Long idEspacioTrabajo) {
+        if (idEspacioTrabajo == null) {
+            throw new IllegalArgumentException("El id del espacio de trabajo no puede ser nulo");
+        }
+
+        // Zona horaria Buenos Aires
+        java.time.ZoneId buenosAiresZone = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
+        java.time.ZonedDateTime nowInBuenosAires = java.time.ZonedDateTime.now(buenosAiresZone);
+        java.time.LocalDateTime fechaActual = nowInBuenosAires.toLocalDateTime();
+
+        // Specification para filtrar por espacio de trabajo y fechaCreacion <= fechaActual
+        Specification<Transaccion> spec = (root, query, cb) -> cb.and(
+            cb.equal(root.get("espacioTrabajo").get("id"), idEspacioTrabajo),
+            cb.lessThanOrEqualTo(root.get("fechaCreacion"), fechaActual)
+        );
+
+        // Usar PageRequest para limitar y ordenar
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "fechaCreacion"));
+        List<Transaccion> transacciones = transaccionRepository.findAll(spec, pageable).getContent();
+        return crearListadoTransacciones(transacciones);
+    }
+
+    @Override
+    public DashboardInfoDTO obtenerDashboardInfo(Long idEspacio) {
+        
+        LocalDate fechaLimite = LocalDate.now().minusMonths(6);
+
+        // Generar lista de los últimos 6 meses en formato YYYY-MM
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM");
+        List<String> ultimosMeses = new java.util.ArrayList<>();
+        LocalDate actual = LocalDate.now();
+        for (int i = 5; i >= 0; i--) {
+            ultimosMeses.add(actual.minusMonths(i).format(formatter));
+        }
+
+        List<IngresosGastosMesDTO> ingresosGastosMes = dashboardRepository.findIngresosVsGastos(idEspacio, fechaLimite);
+        java.util.Map<String, IngresosGastosMesDTO> mapIngresosGastos = new java.util.HashMap<>();
+        for (IngresosGastosMesDTO dto : ingresosGastosMes) {
+            mapIngresosGastos.put(dto.getMes(), dto);
+        }
+        List<IngresosGastosMesDTO> ingresosGastosMesCompletos = new java.util.ArrayList<>();
+        for (String mes : ultimosMeses) {
+            ingresosGastosMesCompletos.add(mapIngresosGastos.getOrDefault(mes, new com.campito.backend.dto.IngresosGastosMesDTOImpl(mes, BigDecimal.ZERO, BigDecimal.ZERO)));
+        }
+
+        List<SaldoAcumuladoMesDTO> saldosAcumulados = dashboardRepository.findSaldosAcumulados(idEspacio, fechaLimite);
+        java.util.Map<String, SaldoAcumuladoMesDTO> mapSaldos = new java.util.HashMap<>();
+        for (SaldoAcumuladoMesDTO dto : saldosAcumulados) {
+            mapSaldos.put(dto.getMes(), dto);
+        }
+        List<SaldoAcumuladoMesDTO> saldosAcumuladosCompletos = new java.util.ArrayList<>();
+        for (String mes : ultimosMeses) {
+            saldosAcumuladosCompletos.add(mapSaldos.getOrDefault(mes, new com.campito.backend.dto.SaldoAcumuladoMesDTOImpl(mes, BigDecimal.ZERO)));
+        }
+
+        // Distribucion de gastos: solo motivos con datos, no se puede completar motivos sin datos sin una lista de motivos
+        List<DistribucionGastoDTO> distribucionGastos = dashboardRepository.findDistribucionGastos(idEspacio, fechaLimite);
+
+        return new DashboardInfoDTO(
+            ingresosGastosMesCompletos,
+            distribucionGastos,
+            saldosAcumuladosCompletos
+        );
     }
     
 }

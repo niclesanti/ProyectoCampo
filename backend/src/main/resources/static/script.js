@@ -11,14 +11,8 @@
 
     const appState = {
         transactions: [],
-        reasons: [
-            'Venta de ganado', 'Alimento para ganado', 'Veterinario', 'Venta de leche',
-            'Compra de equipos', 'Mantenimiento', 'Transporte', 'Impuestos', 'Salarios', 'Otros'
-        ],
-        contacts: [
-            'Juan Pérez', 'Proveedor ABC', 'Dr. García', 'Lácteos del Sur', 'Transporte Rápido',
-            'Veterinaria Central', 'Almacén Rural', 'Banco Provincial', 'Municipalidad', 'Otros'
-        ],
+        reasons: [],
+        contacts: [],
         budgets: [],
         workspaces: [
             { id: 1, name: 'Campo en Guadalupe Norte' },
@@ -29,16 +23,19 @@
             expenses: null,
             balanceTrend: null
         },
+        dashboardCache: {},
         lastSearchResults: [],
+        currentBalance: 0,
     };
 
     const DOMElements = {
+        sideMenu: document.getElementById('sideMenu'),
+        sideMenuOverlay: document.getElementById('sideMenuOverlay'),
         transactionModal: document.getElementById('transactionModal'),
         searchModal: document.getElementById('searchModal'),
         budgetModal: document.getElementById('budgetModal'),
         workspaceModal: document.getElementById('workspaceModal'),
         shareModal: document.getElementById('shareModal'),
-        userMenu: document.getElementById('userMenu'), // Menú de usuario
         shareWorkspaceSelect: document.getElementById('shareWorkspaceSelect'),
         transactionForm: document.getElementById('transactionForm'),
         searchForm: document.getElementById('searchForm'),
@@ -51,7 +48,7 @@
         contactSelect: document.getElementById('recipient'),
         searchReasonSelect: document.getElementById('searchReason'),
         searchContactSelect: document.getElementById('searchRecipient'),
-        searchYearSelect: document.getElementById('searchYear'),
+        searchYearInput: document.getElementById('searchYear'),
         budgetReasonSelect: document.getElementById('budgetReason'),
         newReasonInput: document.getElementById('newReasonInput'),
         newContactInput: document.getElementById('newContactInput'),
@@ -63,13 +60,15 @@
         balanceAmount: document.querySelector('.balance__value'),
         balanceContainer: document.querySelector('.balance__amount'),
         balanceDate: document.querySelector('.balance__date'),
+        transactionDetailModal: document.getElementById('transactionDetailModal'),
+        transactionDetailContent: document.getElementById('transactionDetailContent'),
     };
 
     function initializeApp() {
         loadSampleData();
         setupEventListeners();
         updateDashboard();
-        populateYearSelector();
+        DOMElements.searchYearInput.value = new Date().getFullYear();
         loadAuthenticatedUser();
     }
 
@@ -83,8 +82,10 @@
             })
             .then(usuario => {
                 if (usuario) {
-                    document.querySelector('.user-menu__username').textContent = usuario.nombre;
-                    document.querySelector('.user-menu__email').textContent = usuario.email;
+                    document.querySelector('.side-menu__username').textContent = usuario.nombre;
+                    document.querySelector('.side-menu__email').textContent = usuario.email;
+                    appState.authenticatedUserId = usuario.id; // Guardar el ID del usuario
+                    loadWorkspacesForUser(appState.authenticatedUserId); // Cargar espacios de trabajo
                 }
             })
             .catch(error => {
@@ -94,26 +95,45 @@
             });
     }
 
+    function loadWorkspacesForUser(userId) {
+        if (!userId) {
+            console.warn('No se puede cargar espacios de trabajo: ID de usuario no disponible.');
+            return;
+        }
+        fetch(`/espaciotrabajo/listar/${userId}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('No se pudieron cargar los espacios de trabajo.');
+            })
+            .then(workspaces => {
+                appState.workspaces = workspaces;
+                populateShareWorkspaceSelect(); // Actualizar el selector de compartir
+                populateMainWorkspaceSelect(); // Actualizar el selector principal del dashboard
+            })
+            .catch(error => {
+                console.error('Error al cargar espacios de trabajo:', error);
+                showNotification('Error al cargar los espacios de trabajo', 'error');
+            });
+    }
+
+    function populateMainWorkspaceSelect() {
+        const selectElement = document.getElementById('workspaceSelect');
+        if (!selectElement) return;
+
+        selectElement.innerHTML = '<option value="">Seleccionar espacio de trabajo</option>';
+        appState.workspaces.forEach(workspace => {
+            const option = document.createElement('option');
+            option.value = workspace.id;
+            option.textContent = workspace.nombre;
+            selectElement.appendChild(option);
+        });
+    }
+
     function loadSampleData() {
-        appState.transactions = [
-            { id: 1, type: 'income', amount: 50000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 10 novillos', date: '2024-05-15' },
-            { id: 2, type: 'expense', amount: 15000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-05-20' },
-            { id: 3, type: 'income', amount: 30000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-05-28' },
-            { id: 4, type: 'expense', amount: 8000, reason: 'Veterinario', recipient: 'Dr. García', description: 'Vacunación', date: '2024-06-10' },
-            { id: 5, type: 'expense', amount: 25000, reason: 'Mantenimiento', recipient: 'Taller Rural', description: 'Arreglo de tractor', date: '2024-06-18' },
-            { id: 6, type: 'income', amount: 32000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-06-28' },
-            { id: 7, type: 'income', amount: 75000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 15 terneros', date: '2024-07-12' },
-            { id: 8, type: 'expense', amount: 18000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-07-22' },
-            { id: 9, type: 'income', amount: 31000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-07-28' },
-            { id: 10, type: 'expense', amount: 12000, reason: 'Salarios', recipient: 'Personal', description: 'Pago de quincena', date: '2024-08-15' },
-            { id: 11, type: 'expense', amount: 45000, reason: 'Compra de equipos', recipient: 'Maquinaria SA', description: 'Compra de sembradora', date: '2024-08-25' },
-            { id: 12, type: 'income', amount: 33000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-08-28' },
-            { id: 13, type: 'expense', amount: 9000, reason: 'Impuestos', recipient: 'AFIP', description: 'Pago de impuestos', date: '2024-09-20' },
-            { id: 14, type: 'income', amount: 34000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-09-28' },
-            { id: 15, type: 'income', amount: 120000, reason: 'Venta de ganado', recipient: 'Juan Pérez', description: 'Venta de 20 novillos', date: '2024-10-18' },
-            { id: 16, type: 'expense', amount: 20000, reason: 'Alimento para ganado', recipient: 'Proveedor ABC', description: 'Compra de alimento', date: '2024-10-25' },
-            { id: 17, type: 'income', amount: 35000, reason: 'Venta de leche', recipient: 'Lácteos del Sur', description: 'Entrega de leche', date: '2024-10-28' }
-        ];
+        // Se elimina la carga de datos de ejemplo para que la lista inicie vacía.
+        appState.transactions = [];
     }
 
     function setupEventListeners() {
@@ -126,15 +146,47 @@
             populateShareWorkspaceSelect(); // Populate the dropdown when opening the modal
         });
 
-        // Listener para el menú de usuario
-        document.getElementById('userMenuBtn').addEventListener('click', (event) => {
-            event.stopPropagation(); // Evita que el evento de clic en la ventana se dispare inmediatamente
-            toggleUserMenu();
-        });
+        // Listeners para el menú lateral
+        document.getElementById('menuBtn').addEventListener('click', () => toggleSideMenu(true));
+        document.getElementById('closeSideMenuBtn').addEventListener('click', () => toggleSideMenu(false));
+        DOMElements.sideMenuOverlay.addEventListener('click', () => toggleSideMenu(false));
 
-        
+        // Listener para el selector de espacio de trabajo principal
+        const workspaceSelect = document.getElementById('workspaceSelect');
+        if (workspaceSelect) {
+            workspaceSelect.addEventListener('change', (event) => {
+                const idEspacioTrabajo = event.target.value;
+                if (idEspacioTrabajo) {
+                    const selectedWorkspace = appState.workspaces.find(ws => ws.id == idEspacioTrabajo);
+                    if (selectedWorkspace) {
+                        appState.currentBalance = selectedWorkspace.saldo;
+                        updateBalance();
+                    }
+                    cargarMotivos(idEspacioTrabajo);
+                    cargarContactos(idEspacioTrabajo);
+                    cargarTransaccionesRecientes(idEspacioTrabajo);
+                    actualizarDashboard(idEspacioTrabajo); // <-- AÑADIDO
+                } else {
+                    appState.currentBalance = 0;
+                    updateBalance();
+                    clearMotivos();
+                    clearContactos();
+                    appState.transactions = [];
+                    renderRecentTransactions();
+                    // Limpiar gráficos si no hay espacio seleccionado
+                    Object.values(appState.charts).forEach(chart => {
+                        if (chart) {
+                            chart.data.labels = [];
+                            chart.data.datasets.forEach(dataset => {
+                                dataset.data = [];
+                            });
+                            chart.update();
+                        }
+                    });
+                }
+            });
+        }
 
-        // Botones para cerrar modales
         document.getElementById('closeTransactionModalBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('closeSearchModalBtn').addEventListener('click', () => toggleModal('searchModal', false));
         document.getElementById('closeBudgetModalBtn').addEventListener('click', () => toggleModal('budgetModal', false));
@@ -144,6 +196,10 @@
         document.getElementById('cancelBudgetBtn').addEventListener('click', () => toggleModal('budgetModal', false));
         document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('shareModal', false));
+
+        // Listeners para el nuevo modal de detalle
+        document.getElementById('closeTransactionDetailModalBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
+        document.getElementById('backTransactionDetailBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
 
         // Envíos de formularios
         DOMElements.transactionForm.addEventListener('submit', handleTransactionSubmit);
@@ -164,20 +220,7 @@
             if (event.target.classList.contains('modal')) {
                 toggleModal(event.target.id, false);
             }
-            // Cierra el menú de usuario si se hace clic fuera de él
-            if (!DOMElements.userMenu.hidden && !DOMElements.userMenu.contains(event.target) && !document.getElementById('userMenuBtn').contains(event.target)) {
-                toggleUserMenu(false);
-            }
         });
-    }
-
-    /**
-     * Muestra u oculta el menú desplegable del usuario.
-     * @param {boolean} [forceShow] - Fuerza la visualización o el ocultamiento del menú.
-     */
-    function toggleUserMenu(forceShow) {
-        const isHidden = DOMElements.userMenu.hidden;
-        DOMElements.userMenu.hidden = forceShow !== undefined ? !forceShow : !isHidden;
     }
 
     function updateDashboard() {
@@ -188,9 +231,7 @@
     }
 
     function updateBalance() {
-        const totalIncome = appState.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpenses = appState.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const balance = totalIncome - totalExpenses;
+        const balance = appState.currentBalance;
         DOMElements.balanceAmount.textContent = balance.toLocaleString('es-AR');
         DOMElements.balanceContainer.className = `balance__amount ${balance >= 0 ? 'balance__amount--positive' : 'balance__amount--negative'}`;
         DOMElements.balanceDate.textContent = `Actualizado: ${new Date().toLocaleDateString('es-AR')}`;
@@ -198,7 +239,7 @@
 
     function renderRecentTransactions() {
         const container = DOMElements.recentTransactionsList;
-        const recent = appState.transactions.slice(0, 5);
+        const recent = appState.transactions.slice(0, 6);
         renderTransactionList(container, recent);
     }
 
@@ -230,7 +271,7 @@
                 ${isIncome ? '+' : '-'}${transaction.amount.toLocaleString('es-AR')}
             </div>
         `;
-        item.addEventListener('click', () => showTransactionDetails(transaction));
+        item.addEventListener('click', () => showTransactionDetails(transaction.id));
         return item;
     }
 
@@ -258,29 +299,19 @@
 
     function createMonthlyChart() {
         const ctx = document.getElementById('monthlyChart').getContext('2d');
-        const data = { labels: ['Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], datasets: [ { label: 'Ingresos', data: [45000, 52000, 48000, 55000, 50000, 80000], backgroundColor: '#3B82F6' }, { label: 'Gastos', data: [35000, 38000, 42000, 40000, 45000, 43000], backgroundColor: '#03324F' } ] };
+        const data = { labels: [], datasets: [ { label: 'Ingresos', data: [], backgroundColor: '#3B82F6' }, { label: 'Gastos', data: [], backgroundColor: '#03324F' } ] };
         appState.charts.monthly = new Chart(ctx, { type: 'bar', data, options: getChartOptions() });
     }
 
     function createExpensesChart() {
         const ctx = document.getElementById('expensesChart').getContext('2d');
-        const expenseData = appState.transactions.filter(t => t.type === 'expense').reduce((acc, t) => {
-            acc[t.reason] = (acc[t.reason] || 0) + t.amount;
-            return acc;
-        }, {});
-
-        const numCategories = Object.keys(expenseData).length;
-        if (numCategories === 0) return;
-
-        const generatedColors = generateBluePalette(numCategories);
-
         const data = { 
-            labels: Object.keys(expenseData), 
+            labels: [], 
             datasets: [{ 
-                data: Object.values(expenseData), 
-                backgroundColor: generatedColors
+                data: [], 
+                backgroundColor: []
             }] 
-        };
+        }; 
         appState.charts.expenses = new Chart(ctx, { type: 'doughnut', data, options: getChartOptions('doughnut') });
     }
 
@@ -306,14 +337,7 @@
 
     function createBalanceTrendChart() {
         const ctx = document.getElementById('balanceTrendChart').getContext('2d');
-        const sorted = [...appState.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-        let accumulated = 0;
-        const trendData = sorted.map(t => {
-            accumulated += t.type === 'income' ? t.amount : -t.amount;
-            return { x: t.date, y: accumulated };
-        });
-        if (trendData.length === 0) return;
-        const data = { datasets: [{ label: 'Saldo Acumulado', data: trendData, borderColor: '#03324F', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
+        const data = { labels: [], datasets: [{ label: 'Saldo Acumulado', data: [], borderColor: '#03324F', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
         appState.charts.balanceTrend = new Chart(ctx, { type: 'line', data, options: getChartOptions('line') });
     }
 
@@ -333,14 +357,10 @@
         if (type === 'line') {
             options.scales = {
                 x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day',
-                        tooltipFormat: 'dd MMM yyyy'
-                    },
+                    type: 'category', // Corregido de 'time' a 'category'
                     title: {
                         display: true,
-                        text: 'Fecha'
+                        text: 'Mes' // Cambiado de 'Fecha' a 'Mes'
                     }
                 },
                 y: {
@@ -358,9 +378,17 @@
         const modal = document.getElementById(modalId);
         if (show) {
             modal.hidden = false;
+            // Resetear formularios al abrir
             if (modalId === 'transactionModal') DOMElements.transactionForm.reset();
-            if (modalId === 'searchModal') DOMElements.searchForm.reset();
             if (modalId === 'budgetModal') DOMElements.budgetForm.reset();
+            if (modalId === 'workspaceModal') DOMElements.workspaceForm.reset();
+            if (modalId === 'shareModal') DOMElements.shareForm.reset();
+
+            // Caso especial para el modal de búsqueda
+            if (modalId === 'searchModal') {
+                DOMElements.searchForm.reset();
+                DOMElements.searchYearInput.value = new Date().getFullYear();
+            }
         } else {
             modal.hidden = true;
         }
@@ -378,25 +406,231 @@
     function handleTransactionSubmit(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const newTransaction = {
-            id: Date.now(),
-            type: formData.get('transactionType'),
-            amount: parseFloat(formData.get('amount')),
-            reason: formData.get('reason'),
-            recipient: formData.get('recipient'),
-            description: formData.get('description'),
-            date: formData.get('transactionDate'),
+
+        const transactionType = formData.get('transactionType');
+        const transactionDate = formData.get('transactionDate');
+        const amount = parseFloat(formData.get('amount'));
+        const idMotivo = formData.get('reason'); // idMotivo
+        const idContacto = formData.get('recipient'); // idContacto (opcional)
+        const description = formData.get('description');
+
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+        const nombreCompletoAuditoria = document.querySelector('.side-menu__username').textContent; // Obtener del menú de usuario
+
+        // Validaciones de campos obligatorios
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
+        }
+        if (!transactionType || !transactionDate || isNaN(amount) || amount <= 0 || !idMotivo) {
+            showNotification('Por favor, complete todos los campos obligatorios (Tipo, Fecha, Monto, Motivo).', 'error');
+            return;
+        }
+
+        const transaccionData = {
+            fecha: transactionDate,
+            monto: amount,
+            tipo: transactionType === 'income' ? 'INGRESO' : 'GASTO', // Mapear a los valores del enum de Java
+            descripcion: description || null, // Si es vacío, enviar null
+            nombreCompletoAuditoria: nombreCompletoAuditoria,
+            idEspacioTrabajo: idEspacioTrabajo,
+            idMotivo: idMotivo,
+            idContacto: idContacto || null // Si es vacío, enviar null
         };
-        appState.transactions.unshift(newTransaction);
-        updateDashboard();
-        toggleModal('transactionModal', false);
-        showNotification('Transacción guardada con éxito', 'success');
+
+        fetch('/transaccion/registrar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transaccionData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Asumiendo que la API devuelve el nuevo saldo o la transacción completa
+            }
+            throw new Error('Error al registrar la transacción.');
+        })
+        .then(transaccionGuardada => {
+            // Actualizar el saldo directamente con el monto de la transacción
+            if (transaccionGuardada.tipo === 'INGRESO') {
+                appState.currentBalance += transaccionGuardada.monto;
+            } else if (transaccionGuardada.tipo === 'GASTO') {
+                appState.currentBalance -= transaccionGuardada.monto;
+            }
+
+            // Actualizar el saldo del espacio de trabajo en appState.workspaces
+            const currentWorkspaceId = document.getElementById('workspaceSelect').value;
+            const currentWorkspace = appState.workspaces.find(ws => ws.id == currentWorkspaceId);
+            if (currentWorkspace) {
+                currentWorkspace.saldo = appState.currentBalance;
+            }
+
+            updateBalance();
+
+            // Añadir la nueva transacción a la lista de recientes
+            const reasonObj = appState.reasons.find(r => r.id == transaccionGuardada.idMotivo);
+            const contactObj = appState.contacts.find(c => c.id == transaccionGuardada.idContacto);
+            const newUITransaction = {
+                id: transaccionGuardada.id,
+                type: transaccionGuardada.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: transaccionGuardada.monto,
+                reason: reasonObj ? reasonObj.motivo : 'N/A',
+                recipient: contactObj ? contactObj.nombre : null,
+                description: transaccionGuardada.descripcion,
+                date: transaccionGuardada.fecha,
+                fechaCreacion: transaccionGuardada.fechaCreacion, // Corregido: Añadir fecha de creación
+                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria // Corregido: Añadir usuario de auditoría
+            };
+
+            appState.transactions.unshift(newUITransaction);
+            if (appState.transactions.length > 6) {
+                appState.transactions.pop();
+            }
+            renderRecentTransactions();
+
+            // Invalidar la caché para este espacio de trabajo
+            delete appState.dashboardCache[currentWorkspaceId];
+
+            // Actualizar el dashboard con los nuevos datos
+            actualizarDashboard(currentWorkspaceId);
+
+            toggleModal('transactionModal', false);
+            showNotification('Transacción guardada con éxito', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al guardar la transacción', 'error');
+        });
+    }
+
+    function showTransactionDetails(transactionId) {
+        DOMElements.transactionDetailContent.innerHTML = ''; // Limpiar contenido anterior
+        const transaction = appState.transactions.find(t => t.id === transactionId) || appState.lastSearchResults.find(t => t.id === transactionId);
+
+        if (!transaction) {
+            showNotification('No se pudo encontrar la transacción.', 'error');
+            return;
+        }
+
+        const content = DOMElements.transactionDetailContent;
+        const isIncome = transaction.type === 'income';
+
+        const formattedDate = new Date(transaction.date).toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        let auditHTML = '';
+        if (transaction.fechaCreacion && transaction.nombreCompletoAuditoria) {
+            const formattedCreationDate = new Date(transaction.fechaCreacion).toLocaleString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            auditHTML = `
+                <h3 class="transaction-detail__audit-title">Auditoría</h3>
+                <div class="transaction-detail__item">
+                    <span class="transaction-detail__label">Fecha de Creación</span>
+                    <span class="transaction-detail__value">${formattedCreationDate} hs</span>
+                </div>
+                <div class="transaction-detail__item">
+                    <span class="transaction-detail__label">Usuario</span>
+                    <span class="transaction-detail__value">${transaction.nombreCompletoAuditoria}</span>
+                </div>
+            `;
+        }
+
+        content.innerHTML = `
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Tipo</span>
+                <span class="transaction-detail__value ${isIncome ? 'transaction-detail__value--income' : 'transaction-detail__value--expense'}">${isIncome ? 'Ingreso' : 'Gasto'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Fecha</span>
+                <span class="transaction-detail__value">${formattedDate}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Motivo</span>
+                <span class="transaction-detail__value">${transaction.reason}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Contacto</span>
+                <span class="transaction-detail__value">${transaction.recipient || '-'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Descripción</span>
+                <span class="transaction-detail__value">${transaction.description || '-'}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Monto</span>
+                <span class="transaction-detail__value ${isIncome ? 'transaction-detail__value--income' : 'transaction-detail__value--expense'}">
+                    $ ${transaction.amount.toLocaleString('es-AR')}
+                </span>
+            </div>
+            ${auditHTML}
+        `;
+
+        toggleModal('transactionDetailModal', true);
     }
 
     function handleSearchSubmit(event) {
         event.preventDefault();
-        // Lógica de búsqueda deshabilitada temporalmente
-        alert('La funcionalidad de búsqueda se conectará con el backend más adelante.');
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
+        }
+
+        const reasonSelect = DOMElements.searchForm.searchReason;
+        const recipientSelect = DOMElements.searchForm.searchRecipient;
+
+        const searchData = {
+            mes: DOMElements.searchForm.searchMonth.value ? parseInt(DOMElements.searchForm.searchMonth.value) : null,
+            anio: DOMElements.searchForm.searchYear.value ? parseInt(DOMElements.searchForm.searchYear.value) : null,
+            motivo: reasonSelect.value ? reasonSelect.options[reasonSelect.selectedIndex].textContent : null,
+            contacto: recipientSelect.value ? recipientSelect.options[recipientSelect.selectedIndex].textContent : null,
+            idEspacioTrabajo: parseInt(idEspacioTrabajo)
+        };
+
+        fetch('/transaccion/buscar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error al buscar las transacciones.');
+        })
+        .then(transactions => {
+            appState.lastSearchResults = transactions.map(t => ({
+                id: t.id,
+                type: t.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: t.monto,
+                reason: t.nombreMotivo,
+                recipient: t.nombreContacto,
+                description: t.descripcion,
+                date: t.fecha,
+                fechaCreacion: t.fechaCreacion,
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria
+            }));
+            applySearchOrder();
+            showNotification(`Se encontraron ${transactions.length} transacciones.`, 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
+            DOMElements.searchResultsContainer.innerHTML = '<p class="transactions-list__empty">Error al cargar los resultados.</p>';
+        });
     }
 
     function handleWorkspaceSubmit(event) {
@@ -409,7 +643,7 @@
             errorElement.hidden = true;
             const workspaceData = {
                 nombre: workspaceName,
-                idUsuarioAdmin: 1 // ID de usuario harcodeado como se solicita
+                idUsuarioAdmin: appState.authenticatedUserId
             };
 
             console.log('Enviando datos:', JSON.stringify(workspaceData));
@@ -422,17 +656,21 @@
                 body: JSON.stringify(workspaceData)
             })
             .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Error en la solicitud');
+                if (!response.ok) {
+                    // Si la respuesta no es OK, lanzamos un error para que lo capture el .catch
+                    throw new Error('Error en la solicitud al servidor');
                 }
+                // No es necesario procesar un cuerpo JSON si la respuesta es exitosa pero vacía
             })
-            .then(data => {
-                console.log('Respuesta del servidor:', data);
+            .then(() => {
+                // Limpiar el campo de texto
+                workspaceNameInput.value = '';
+                // Cerrar el modal
                 toggleModal('workspaceModal', false);
+                // Mostrar notificación de éxito
                 showNotification(`Espacio "${workspaceName}" creado con éxito`, 'success');
-                // Aquí se podría añadir a una lista de espacios y actualizar el selector principal
+                // Actualizar la lista de espacios de trabajo en la UI
+                loadWorkspacesForUser(appState.authenticatedUserId); 
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -447,16 +685,54 @@
     function handleShareSubmit(event) {
         event.preventDefault();
         const workspaceId = DOMElements.shareWorkspaceSelect.value;
-        const email = document.getElementById('shareEmail').value.trim();
+        const emailInput = document.getElementById('shareEmail');
+        const email = emailInput.value.trim();
 
-        if (workspaceId && email) {
-            const workspace = appState.workspaces.find(ws => ws.id == workspaceId);
-            console.log(`Compartiendo espacio "${workspace ? workspace.name : 'N/A'}" con ${email}`);
-            toggleModal('shareModal', false);
-            showNotification(`Invitación enviada a ${email} para el espacio "${workspace ? workspace.name : 'N/A'}"`, 'success');
-        } else {
-            showNotification('Por favor, seleccione un espacio y/o ingrese un email válido', 'error');
+        if (!workspaceId) {
+            showNotification('Por favor, seleccione un espacio de trabajo.', 'error');
+            return;
         }
+
+        if (!email) {
+            showNotification('Por favor, ingrese un email válido.', 'error');
+            return;
+        }
+
+        if (email.length > 100) {
+            showNotification('El email no puede exceder los 100 caracteres.', 'error');
+            return;
+        }
+
+        if (!appState.authenticatedUserId) {
+            showNotification('Error: ID de usuario autenticado no disponible.', 'error');
+            console.error('Error: appState.authenticatedUserId es null o undefined.');
+            return;
+        }
+
+        const idUsuarioAdmin = appState.authenticatedUserId;
+
+        fetch(`http://localhost:8080/espaciotrabajo/compartir/${email}/${workspaceId}/${idUsuarioAdmin}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // No se envía body ya que los datos van en la URL
+        })
+        .then(response => {
+            if (response.ok) {
+                // Limpiar campos y cerrar modal
+                DOMElements.shareWorkspaceSelect.value = '';
+                emailInput.value = '';
+                toggleModal('shareModal', false);
+                showNotification(`Invitación enviada a ${email} para el espacio de trabajo.`, 'success');
+            } else {
+                throw new Error('Error al compartir el espacio de trabajo.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al compartir el espacio de trabajo.', 'error');
+        });
     }
 
     function handleBudgetSubmit(event) {
@@ -474,11 +750,7 @@
     }
 
     function populateAllSelectors() {
-        populateSelector(DOMElements.reasonSelect, appState.reasons, "Seleccionar motivo");
-        populateSelector(DOMElements.contactSelect, appState.contacts, "Seleccionar contacto");
-        populateSelector(DOMElements.searchReasonSelect, appState.reasons, "Todos los motivos");
-        populateSelector(DOMElements.searchContactSelect, appState.contacts, "Todos los contactos");
-        populateSelector(DOMElements.budgetReasonSelect, appState.reasons, "Seleccionar motivo");
+        // Ya no se necesita poblar los selectores de contactos desde aquí
     }
 
     function populateShareWorkspaceSelect() {
@@ -487,7 +759,7 @@
         appState.workspaces.forEach(workspace => {
             const option = document.createElement('option');
             option.value = workspace.id;
-            option.textContent = workspace.name;
+            option.textContent = workspace.nombre;
             selectElement.appendChild(option);
         });
     }
@@ -502,29 +774,180 @@
         });
     }
 
+    function cargarMotivos(idEspacioTrabajo) {
+        fetch(`/transaccion/motivo/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los motivos.');
+                }
+                return response.json();
+            })
+            .then(motivos => {
+                appState.reasons = motivos;
+                populateMotivoSelector(DOMElements.reasonSelect, 'Seleccionar motivo');
+                populateMotivoSelector(DOMElements.searchReasonSelect, 'Todos los motivos');
+                populateMotivoSelector(DOMElements.budgetReasonSelect, 'Seleccionar motivo');
+            })
+            .catch(error => {
+                console.error('Error al cargar motivos:', error);
+                showNotification('Error al cargar los motivos', 'error');
+            });
+    }
+
+    function clearMotivos() {
+        appState.reasons = [];
+        populateMotivoSelector(DOMElements.reasonSelect, 'Seleccionar motivo');
+        populateMotivoSelector(DOMElements.searchReasonSelect, 'Todos los motivos');
+        populateMotivoSelector(DOMElements.budgetReasonSelect, 'Seleccionar motivo');
+    }
+
+    function populateMotivoSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.reasons.forEach(motivo => {
+            const opt = document.createElement('option');
+            opt.value = motivo.id; // Usar el ID del motivo como valor
+            opt.textContent = motivo.motivo; // Mostrar el nombre del motivo
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function addReasonToSelectors(reason) {
+        appState.reasons.push(reason);
+        const option = document.createElement('option');
+        option.value = reason.id;
+        option.textContent = reason.motivo;
+        DOMElements.reasonSelect.appendChild(option.cloneNode(true));
+        DOMElements.searchReasonSelect.appendChild(option.cloneNode(true));
+        DOMElements.budgetReasonSelect.appendChild(option.cloneNode(true));
+    }
+
+    function cargarContactos(idEspacioTrabajo) {
+        fetch(`/transaccion/contacto/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los contactos.');
+                }
+                return response.json();
+            })
+            .then(contactos => {
+                appState.contacts = contactos;
+                populateContactoSelector(DOMElements.contactSelect, 'Seleccionar contacto');
+                populateContactoSelector(DOMElements.searchContactSelect, 'Todos los contactos');
+            })
+            .catch(error => {
+                console.error('Error al cargar contactos:', error);
+                showNotification('Error al cargar los contactos', 'error');
+            });
+    }
+
+    function clearContactos() {
+        appState.contacts = [];
+        populateContactoSelector(DOMElements.contactSelect, 'Seleccionar contacto');
+        populateContactoSelector(DOMElements.searchContactSelect, 'Todos los contactos');
+    }
+
+    function populateContactoSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.contacts.forEach(contacto => {
+            const opt = document.createElement('option');
+            opt.value = contacto.id;
+            opt.textContent = contacto.nombre;
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function addContactToSelectors(contact) {
+        appState.contacts.push(contact);
+        const option = document.createElement('option');
+        option.value = contact.id;
+        option.textContent = contact.nombre;
+        DOMElements.contactSelect.appendChild(option.cloneNode(true));
+        DOMElements.searchContactSelect.appendChild(option.cloneNode(true));
+    }
+
     function handleNewReason() {
         const newReason = DOMElements.newReasonInput.value.trim();
-        if (newReason && !appState.reasons.includes(newReason)) {
-            appState.reasons.push(newReason);
-            populateAllSelectors();
-            DOMElements.reasonSelect.value = newReason;
-            toggleNestedForm('newReasonForm', false);
-            showNotification('Motivo guardado', 'success');
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (newReason) {
+            const motivoData = {
+                motivo: newReason,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/transaccion/motivo/registrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(motivoData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al registrar el motivo.');
+            })
+            .then(motivoGuardado => {
+                toggleNestedForm('newReasonForm', false);
+                showNotification('Motivo guardado con éxito', 'success');
+                addReasonToSelectors(motivoGuardado);
+                DOMElements.reasonSelect.value = motivoGuardado.id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar el motivo', 'error');
+            });
         } else {
-            showNotification('El motivo no es válido o ya existe', 'error');
+            showNotification('Por favor, ingrese un nombre para el motivo', 'error');
         }
     }
 
     function handleNewContact() {
-        const newContact = DOMElements.newContactInput.value.trim();
-        if (newContact && !appState.contacts.includes(newContact)) {
-            appState.contacts.push(newContact);
-            populateAllSelectors();
-            DOMElements.contactSelect.value = newContact;
-            toggleNestedForm('newContactForm', false);
-            showNotification('Contacto guardado', 'success');
+        const newContactName = DOMElements.newContactInput.value.trim();
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (newContactName) {
+            const contactoData = {
+                nombre: newContactName,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/transaccion/contacto/registrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(contactoData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error al registrar el contacto.');
+            })
+            .then(contactoGuardado => {
+                toggleNestedForm('newContactForm', false);
+                showNotification('Contacto guardado con éxito', 'success');
+                addContactToSelectors(contactoGuardado);
+                DOMElements.contactSelect.value = contactoGuardado.id;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar el contacto', 'error');
+            });
         } else {
-            showNotification('El contacto no es válido o ya existe', 'error');
+            showNotification('Por favor, ingrese un nombre para el contacto', 'error');
         }
     }
 
@@ -570,6 +993,35 @@
         applySearchOrder();
     }
 
+    function cargarTransaccionesRecientes(idEspacioTrabajo) {
+        fetch(`/transaccion/buscarRecientes/${idEspacioTrabajo}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error al cargar las transacciones recientes.');
+        })
+        .then(transactions => {
+            appState.transactions = transactions.map(t => ({
+                id: t.id,
+                type: t.tipo === 'INGRESO' ? 'income' : 'expense',
+                amount: t.monto,
+                reason: t.nombreMotivo,
+                recipient: t.nombreContacto,
+                description: t.descripcion,
+                date: t.fecha,
+                fechaCreacion: t.fechaCreacion,
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria
+            }));
+            renderRecentTransactions();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
+            DOMElements.recentTransactionsList.innerHTML = '<p class="transactions-list__empty">Error al cargar transacciones.</p>';
+        });
+    }
+
     function applySearchOrder() {
         const order = DOMElements.orderBySelect.value;
         let sorted = [...appState.lastSearchResults];
@@ -592,46 +1044,109 @@
         }, 3000);
     }
 
-    function showTransactionDetails(transaction) {
-        const details = `
-            Tipo: ${transaction.type}
-            Monto: ${transaction.amount.toLocaleString('es-AR')}
-            Motivo: ${transaction.reason}
-            Fecha: ${new Date(transaction.date).toLocaleDateString('es-AR')}
-            Contacto: ${transaction.recipient || 'N/A'}
-            Descripción: ${transaction.description || 'N/A'}
-        `;
-        alert(`Detalles de la Transacción:\n\n${details}`);
+    
+
+    /**
+     * Convierte una fecha en formato 'YYYY-MM' a un nombre de mes abreviado en español.
+     * @param {string} fechaString - La fecha en formato 'YYYY-MM'.
+     * @returns {string} El nombre del mes abreviado (ej: 'Ene').
+     */
+    function formatearMes(fechaString) {
+        const [year, month] = fechaString.split('-');
+        const fecha = new Date(year, month - 1);
+        return fecha.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
     }
 
     /**
-     * Rellena el selector de años en el formulario de búsqueda.
+     * Obtiene los datos del dashboard desde la API y actualiza los gráficos.
+     * @param {number} idEspacio - El ID del espacio de trabajo.
      */
-    function populateYearSelector() {
-        // Se busca el elemento directamente aquí para asegurar que el DOM esté cargado.
-        const selectElement = document.getElementById('searchYear');
-        if (!selectElement) {
-            console.error("El elemento select con id 'searchYear' no fue encontrado.");
-            return;
+    function actualizarDashboard(idEspacio) {
+        if (!idEspacio) return;
+
+        // 1. Comprobar la caché primero
+        if (appState.dashboardCache[idEspacio]) {
+            const cachedData = appState.dashboardCache[idEspacio];
+            actualizarGraficoIngresosGastos(cachedData.ingresosGastos);
+            actualizarGraficoDistribucionGastos(cachedData.distribucionGastos);
+            actualizarGraficoTendenciaSaldo(cachedData.saldoAcumuladoMes);
+            showNotification('Datos del dashboard cargados desde caché', 'info');
+            return; // Salir de la función si los datos están en caché
         }
 
-        const currentYear = new Date().getFullYear();
-        const startYear = 2000;
-        const endYear = 2030;
+        // 2. Si no están en caché, hacer la llamada a la API
+        fetch(`/transaccion/dashboardinfo/${idEspacio}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los datos del dashboard.');
+                }
+                return response.json();
+            })
+            .then(dashboardData => {
+                // 3. Guardar los datos en la caché
+                appState.dashboardCache[idEspacio] = dashboardData;
 
-        // Limpiar opciones existentes (excepto la primera "Todos")
-        while (selectElement.options.length > 1) {
-            selectElement.remove(1);
-        }
+                // 4. Actualizar los gráficos
+                actualizarGraficoIngresosGastos(dashboardData.ingresosGastos);
+                actualizarGraficoDistribucionGastos(dashboardData.distribucionGastos);
+                actualizarGraficoTendenciaSaldo(dashboardData.saldoAcumuladoMes);
+            })
+            .catch(error => {
+                console.error('Error al actualizar el dashboard:', error);
+                showNotification('Error al cargar los datos del dashboard', 'error');
+            });
+    }
 
-        for (let year = endYear; year >= startYear; year--) {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            selectElement.appendChild(option);
-        }
-        
-        selectElement.value = currentYear;
+    /**
+     * Actualiza el gráfico de ingresos vs. gastos.
+     * @param {Array<object>} data - Los datos de ingresos y gastos por mes.
+     */
+    function actualizarGraficoIngresosGastos(data) {
+        const chart = appState.charts.monthly;
+        if (!chart) return;
+
+        const labels = data.map(d => formatearMes(d.mes));
+        const ingresos = data.map(d => d.ingresos);
+        const gastos = data.map(d => d.gastos);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = ingresos;
+        chart.data.datasets[1].data = gastos;
+        chart.update();
+    }
+
+    /**
+     * Actualiza el gráfico de distribución de gastos.
+     * @param {Array<object>} data - Los datos de distribución de gastos por motivo.
+     */
+    function actualizarGraficoDistribucionGastos(data) {
+        const chart = appState.charts.expenses;
+        if (!chart) return;
+
+        const labels = data.map(d => d.motivo);
+        const porcentajes = data.map(d => d.porcentaje);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = porcentajes;
+        // Generar nuevos colores para la cantidad actual de categorías
+        chart.data.datasets[0].backgroundColor = generateBluePalette(labels.length);
+        chart.update();
+    }
+
+    /**
+     * Actualiza el gráfico de tendencia de saldo acumulado.
+     * @param {Array<object>} data - Los datos de saldo acumulado por mes.
+     */
+    function actualizarGraficoTendenciaSaldo(data) {
+        const chart = appState.charts.balanceTrend;
+        if (!chart) return;
+
+        const labels = data.map(d => formatearMes(d.mes));
+        const saldos = data.map(d => d.saldoAcumulado);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = saldos;
+        chart.update();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -660,6 +1175,28 @@
         event.preventDefault();
         const form = event.target;
         form.submit();
+    }
+
+    /**
+     * Muestra u oculta el menú lateral.
+     * @param {boolean} show - Indica si se debe mostrar u ocultar el menú.
+     */
+    function toggleSideMenu(show) {
+        const sideMenu = DOMElements.sideMenu;
+        if (show) {
+            sideMenu.hidden = false;
+            // Se usa un pequeño retardo para permitir que el navegador aplique `hidden = false`
+            // antes de añadir la clase que inicia la transición.
+            setTimeout(() => {
+                sideMenu.classList.add('is-open');
+            }, 10);
+        } else {
+            sideMenu.classList.remove('is-open');
+            // Espera a que la transición termine para ocultar el elemento
+            sideMenu.addEventListener('transitionend', () => {
+                sideMenu.hidden = true;
+            }, { once: true });
+        }
     }
 
 })();

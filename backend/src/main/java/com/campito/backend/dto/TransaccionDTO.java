@@ -4,15 +4,19 @@ import java.time.LocalDate;
 
 import com.campito.backend.model.Transaccion;
 import com.campito.backend.model.TipoTransaccion;
+
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record TransaccionDTO(
+    Long id,
     @NotNull(message = "La fecha no puede ser nula")
     LocalDate fecha,
     @NotNull(message = "El monto no puede ser nulo")
     @Min(value = 0, message = "El monto no puede ser negativo")
+    @Max(value = 9999999999999L, message = "El monto no puede exceder los 9.999.999.999.999,99")
     Float monto,
     @NotNull(message = "El tipo de transacción no puede ser nulo")
     TipoTransaccion tipo,
@@ -35,17 +39,5 @@ public record TransaccionDTO(
         transaccion.setDescripcion(this.descripcion);
         transaccion.setNombreCompletoAuditoria(this.nombreCompletoAuditoria);
         return transaccion;
-    }
-    public TransaccionDTO toTransaccionDTO(Transaccion transaccion) {
-        return new TransaccionDTO(
-            transaccion.getFecha(),
-            transaccion.getMonto(),
-            transaccion.getTipo(),
-            transaccion.getDescripcion(),
-            transaccion.getNombreCompletoAuditoria(),
-            transaccion.getEspacioTrabajo().getId(),
-            transaccion.getMotivo().getId(),
-            transaccion.getContacto() != null ? transaccion.getContacto().getId() : null
-        );
     }
 }

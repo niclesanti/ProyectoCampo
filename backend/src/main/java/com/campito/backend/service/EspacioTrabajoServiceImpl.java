@@ -1,5 +1,7 @@
 package com.campito.backend.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 import com.campito.backend.dao.UsuarioRepository;
 import com.campito.backend.dto.EspacioTrabajoDTO;
+import com.campito.backend.dto.EspacioTrabajoListadoDTO;
 import com.campito.backend.model.EspacioTrabajo;
 import com.campito.backend.model.Usuario;
 
@@ -43,9 +46,9 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
 
     @Override
     @Transactional
-    public void compartirEspacioTrabajo(Long idUsuario, Long idEspacioTrabajo, Long idUsuarioAdmin) {
-        if(idUsuario == null || idEspacioTrabajo == null || idUsuarioAdmin == null) {
-            throw new IllegalArgumentException("El ID del usuario, el ID del espacio de trabajo y el ID del usuario administrador del espacio no pueden ser nulos");
+    public void compartirEspacioTrabajo(String email, Long idEspacioTrabajo, Long idUsuarioAdmin) {
+        if(email == null || idEspacioTrabajo == null || idUsuarioAdmin == null) {
+            throw new IllegalArgumentException("El email, el ID del espacio de trabajo y el ID del usuario administrador del espacio no pueden ser nulos");
         }
 
         EspacioTrabajo espacioTrabajo = espacioRepository.findById(idEspacioTrabajo).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + idEspacioTrabajo + " no encontrado"));
@@ -54,11 +57,24 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
             throw new IllegalArgumentException("El usuario administrador no tiene permiso para compartir este espacio de trabajo");
         }
 
-        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new EntityNotFoundException("Usuario con ID " + idUsuario + " no encontrado"));
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Usuario con email " + email + " no encontrado"));
 
         espacioTrabajo.addUsuariosParticipante(usuario);
 
         espacioRepository.save(espacioTrabajo);
+    }
+
+    @Override
+    public List<EspacioTrabajoListadoDTO> listarEspaciosTrabajoPorUsuario(Long idUsuario) {
+        List<EspacioTrabajo> espacios = espacioRepository.findByUsuariosParticipantes_Id(idUsuario);
+        return espacios.stream()
+            .map(espacio -> new EspacioTrabajoListadoDTO(
+                espacio.getId(),
+                espacio.getNombre(),
+                espacio.getSaldo(),
+                espacio.getUsuarioAdmin().getId()
+            ))
+            .toList();
     }
 
 }

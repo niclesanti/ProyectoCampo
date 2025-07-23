@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.campito.backend.dto.ContactoDTO;
 import com.campito.backend.dto.ContactoListadoDTO;
+import com.campito.backend.dto.DashboardInfoDTO;
 import com.campito.backend.dto.MotivoDTO;
 import com.campito.backend.dto.MotivoListadoDTO;
 import com.campito.backend.dto.TransaccionBusquedaDTO;
@@ -49,9 +50,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/registrar")
-    public ResponseEntity<Void> registrarTransaccion(@Valid @RequestBody TransaccionDTO transaccionDTO) {
-        transaccionService.registrarTransaccion(transaccionDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<TransaccionDTO> registrarTransaccion(@Valid @RequestBody TransaccionDTO transaccionDTO) {
+        TransaccionDTO nuevaTransaccion = transaccionService.registrarTransaccion(transaccionDTO);
+        return new ResponseEntity<>(nuevaTransaccion, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Remover transacción",
@@ -88,9 +89,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/contacto/registrar")
-    public ResponseEntity<Void> registrarContactoTransferencia(@Valid @RequestBody ContactoDTO contactoDTO) {
-        transaccionService.registrarContactoTransferencia(contactoDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<ContactoDTO> registrarContactoTransferencia(@Valid @RequestBody ContactoDTO contactoDTO) {
+        ContactoDTO nuevoContacto = transaccionService.registrarContactoTransferencia(contactoDTO);
+        return new ResponseEntity<>(nuevoContacto, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Listar contactos de transferencia por espacio de trabajo",
@@ -114,9 +115,9 @@ public class TransaccionController {
                     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
                 })
     @PostMapping("/motivo/registrar")
-    public ResponseEntity<Void> nuevoMotivoTransaccion(@Valid @RequestBody MotivoDTO motivoDTO) {
-        transaccionService.nuevoMotivoTransaccion(motivoDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<MotivoDTO> nuevoMotivoTransaccion(@Valid @RequestBody MotivoDTO motivoDTO) {
+        MotivoDTO nuevoMotivo = transaccionService.nuevoMotivoTransaccion(motivoDTO);
+        return new ResponseEntity<>(nuevoMotivo, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Listar motivos de transacción por espacio de trabajo",
@@ -130,5 +131,31 @@ public class TransaccionController {
     public ResponseEntity<List<MotivoListadoDTO>> listarMotivos(@PathVariable Long idEspacioTrabajo) {
         List<MotivoListadoDTO> motivos = transaccionService.listarMotivos(idEspacioTrabajo);
         return new ResponseEntity<>(motivos, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Buscar transacciones recientes",
+                description = "Busca las ultimas 5 transaciones realizadas en un espacio de trabajo.",
+                responses = {
+                    @ApiResponse(responseCode = "200", description = "Transacciones encontradas"),
+                    @ApiResponse(responseCode = "400", description = "Error en los criterios de búsqueda"),
+                    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+                })
+    @GetMapping("/buscarRecientes/{idEspacio}")
+    public ResponseEntity<List<TransaccionListadoDTO>> buscarTransaccionesRecientes(@PathVariable Long idEspacio) {
+        List<TransaccionListadoDTO> transacciones = transaccionService.buscarTransaccionesRecientes(idEspacio);
+        return new ResponseEntity<>(transacciones, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Obtener información del dashboard",
+                description = "Obtiene la información necesaria para el dashboard de un espacio de trabajo.",
+                responses = {
+                    @ApiResponse(responseCode = "200", description = "Información del dashboard obtenida correctamente"),
+                    @ApiResponse(responseCode = "404", description = "Espacio de trabajo no encontrado"),
+                    @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+                })
+    @GetMapping("/dashboardinfo/{idEspacio}")
+    public ResponseEntity<DashboardInfoDTO> obtenerDashboardInfo(@PathVariable Long idEspacio) {
+        DashboardInfoDTO dashboardInfo = transaccionService.obtenerDashboardInfo(idEspacio);
+        return new ResponseEntity<>(dashboardInfo, HttpStatus.OK);
     }
 }
