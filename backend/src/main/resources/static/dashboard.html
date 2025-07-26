@@ -58,9 +58,20 @@
                 <img src="/logo.png" alt="Logo CAMPITO" class="header__logo-img">
             </div>
             <div class="header__right-section">
-                <button id="notificationsBtn" class="header__icon-btn" aria-label="Ver notificaciones">
-                    <i class="fas fa-bell"></i>
-                </button>
+                <div class="header__notifications">
+                    <button id="notificationsBtn" class="header__icon-btn" aria-label="Ver notificaciones">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <!-- Menú Desplegable de Notificaciones -->
+                    <div id="notificationsMenu" class="notifications-menu" hidden>
+                        <div class="notifications-menu__header">
+                            <h3 class="notifications-menu__title">Notificaciones</h3>
+                        </div>
+                        <div class="notifications-menu__content">
+                            <p class="notifications-menu__empty-message">Aún no tienes notificaciones.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>

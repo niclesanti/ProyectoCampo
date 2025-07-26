@@ -451,6 +451,10 @@ body {
 }
 
 /* Menú Desplegable de Usuario */
+.header__notifications {
+    position: relative;
+}
+
 .user-menu {
     position: absolute;
     top: calc(100% + 10px); /* Debajo del botón con un pequeño margen */
@@ -465,6 +469,45 @@ body {
     overflow: hidden;
     animation: fadeInScale 0.2s ease-out;
 }
+
+/* Menú Desplegable de Notificaciones */
+.notifications-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    width: 300px; /* Ancho ligeramente mayor para notificaciones */
+    z-index: 1100;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    animation: fadeInScale 0.2s ease-out;
+}
+
+.notifications-menu__header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-primary);
+}
+
+.notifications-menu__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.notifications-menu__content {
+    padding: 1rem;
+}
+
+.notifications-menu__empty-message {
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
 
 @keyframes fadeInScale {
     from {
