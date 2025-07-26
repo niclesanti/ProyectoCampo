@@ -7,12 +7,15 @@ import com.campito.backend.model.TipoTransaccion;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
 public record TransaccionDTO(
     Long id,
     @NotNull(message = "La fecha no puede ser nula")
+    @PastOrPresent(message = "La fecha debe ser en el pasado o presente")
     LocalDate fecha,
     @NotNull(message = "El monto no puede ser nulo")
     @Min(value = 0, message = "El monto no puede ser negativo")
@@ -22,7 +25,7 @@ public record TransaccionDTO(
     TipoTransaccion tipo,
     @Size(max = 100, message = "La descripción no puede exceder los 100 caracteres")
     String descripcion,
-    @NotNull(message = "El nombre del usuario no puede ser nulo")
+    @NotBlank(message = "El nombre del usuario no puede estar vacío")
     @Size(max = 100, message = "El nombre completo del usuario no puede exceder los 100 caracteres")
     String nombreCompletoAuditoria,
     @NotNull(message = "El ID del espacio de trabajo no puede ser nulo")
