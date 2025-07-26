@@ -31,6 +31,7 @@
     const DOMElements = {
         sideMenu: document.getElementById('sideMenu'),
         sideMenuOverlay: document.getElementById('sideMenuOverlay'),
+        notificationsMenu: document.getElementById('notificationsMenu'),
         transactionModal: document.getElementById('transactionModal'),
         searchModal: document.getElementById('searchModal'),
         budgetModal: document.getElementById('budgetModal'),
@@ -151,6 +152,12 @@
         document.getElementById('closeSideMenuBtn').addEventListener('click', () => toggleSideMenu(false));
         DOMElements.sideMenuOverlay.addEventListener('click', () => toggleSideMenu(false));
 
+        // Listener para el menú de notificaciones
+        document.getElementById('notificationsBtn').addEventListener('click', (event) => {
+            event.stopPropagation(); // Evita que el evento de clic se propague al window
+            toggleNotificationsMenu();
+        });
+
         // Listener para el selector de espacio de trabajo principal
         const workspaceSelect = document.getElementById('workspaceSelect');
         if (workspaceSelect) {
@@ -219,6 +226,10 @@
         window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
                 toggleModal(event.target.id, false);
+            }
+            // Cierra el menú de notificaciones si se hace clic fuera de él
+            if (!DOMElements.notificationsMenu.hidden && !DOMElements.notificationsMenu.contains(event.target) && event.target.id !== 'notificationsBtn') {
+                toggleNotificationsMenu(false);
             }
         });
     }
@@ -1197,6 +1208,17 @@
                 sideMenu.hidden = true;
             }, { once: true });
         }
+    }
+
+    /**
+     * Muestra u oculta el menú de notificaciones.
+     * @param {boolean} [forceShow] - Si se proporciona, fuerza la apertura o cierre del menú.
+     */
+    function toggleNotificationsMenu(forceShow) {
+        const menu = DOMElements.notificationsMenu;
+        const shouldShow = forceShow !== undefined ? forceShow : menu.hidden;
+
+        menu.hidden = !shouldShow;
     }
 
 })();
