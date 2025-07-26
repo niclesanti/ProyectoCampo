@@ -1,5 +1,6 @@
 package com.campito.backend.config;
 
+import com.campito.backend.service.CustomOidcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +13,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Autowired
-    public SecurityConfig() {
-    }
+    private CustomOidcUserService customOidcUserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -27,15 +27,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login.html", "/script.js", "/styles.css", "/logo.png", "/logo_login.png", "/usuario/login", "/usuario/registrar", "/swagger-ui/**", "/v3/api-docs/**", "/espaciotrabajo/**", "/transacciones/**", "/usuario/me").permitAll()
+                .requestMatchers("/", "/login.html", "/script.js", "/styles.css", "/logo.png", "/logo_login.png", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .formLogin(form -> form
+            .oauth2Login(oauth2 -> oauth2
                 .loginPage("/login.html")
-                .loginProcessingUrl("/usuario/login")
-                .usernameParameter("email")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(customOidcUserService)
+                )
                 .defaultSuccessUrl("/dashboard.html", true)
-                .failureUrl("/login.html?error=true")
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

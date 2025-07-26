@@ -552,6 +552,11 @@ body {
 
 .login-box .btn--full-width {
     justify-content: center; /* Centra el texto en los botones de login */
+    width: auto;
+    min-width: unset;
+    max-width: unset;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 /* Selector de Espacio de Trabajo (.workspace-selector) */
@@ -923,8 +928,9 @@ body {
 }
 
 .login-box {
-    width: 100%;
-    max-width: 400px;
+    width: auto;
+    min-width: 280px;
+    max-width: 340px;
     padding: 2rem;
     background-color: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
