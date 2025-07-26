@@ -164,6 +164,8 @@ public class TransaccionServiceImpl implements TransaccionService {
                 hasta = java.time.LocalDate.of(anio, 12, 31);
             }
             spec = spec.and((root, query, cb) -> cb.between(root.get("fecha"), desde, hasta));
+        } else if(datosBusqueda.mes() != null){
+            throw new IllegalArgumentException("Si no se especifica el año, no se puede especificar el mes");
         }
 
         if (datosBusqueda.motivo() != null && !datosBusqueda.motivo().isEmpty()) {
@@ -231,28 +233,6 @@ public class TransaccionServiceImpl implements TransaccionService {
                 .toList();
     }
 
-    // Metodos auxiliares
-
-    private List<TransaccionListadoDTO> crearListadoTransacciones(List<Transaccion> transacciones) {
-        return transacciones.stream()
-                .map(t -> new TransaccionListadoDTO(
-                    t.getId(),
-                    t.getFecha(),
-                    t.getMonto(),
-                    t.getTipo(),
-                    t.getDescripcion(),
-                    t.getNombreCompletoAuditoria(),
-                    t.getFechaCreacion(),
-                    t.getEspacioTrabajo() != null ? t.getEspacioTrabajo().getId() : null,
-                    t.getEspacioTrabajo() != null ? t.getEspacioTrabajo().getNombre() : null,
-                    t.getMotivo() != null ? t.getMotivo().getId() : null,
-                    t.getMotivo() != null ? t.getMotivo().getMotivo() : null,
-                    t.getContacto() != null ? t.getContacto().getId() : null,
-                    t.getContacto() != null ? t.getContacto().getNombre() : null
-                ))
-                .toList();
-    }
-
     @Override
     public List<TransaccionListadoDTO> buscarTransaccionesRecientes(Long idEspacioTrabajo) {
         if (idEspacioTrabajo == null) {
@@ -317,6 +297,28 @@ public class TransaccionServiceImpl implements TransaccionService {
             distribucionGastos,
             saldosAcumuladosCompletos
         );
+    }
+
+    // Metodos auxiliares
+
+    private List<TransaccionListadoDTO> crearListadoTransacciones(List<Transaccion> transacciones) {
+        return transacciones.stream()
+                .map(t -> new TransaccionListadoDTO(
+                    t.getId(),
+                    t.getFecha(),
+                    t.getMonto(),
+                    t.getTipo(),
+                    t.getDescripcion(),
+                    t.getNombreCompletoAuditoria(),
+                    t.getFechaCreacion(),
+                    t.getEspacioTrabajo() != null ? t.getEspacioTrabajo().getId() : null,
+                    t.getEspacioTrabajo() != null ? t.getEspacioTrabajo().getNombre() : null,
+                    t.getMotivo() != null ? t.getMotivo().getId() : null,
+                    t.getMotivo() != null ? t.getMotivo().getMotivo() : null,
+                    t.getContacto() != null ? t.getContacto().getId() : null,
+                    t.getContacto() != null ? t.getContacto().getNombre() : null
+                ))
+                .toList();
     }
     
 }

@@ -81,8 +81,8 @@ public class TransaccionController {
         return new ResponseEntity<>(transacciones, HttpStatus.OK);
     }
 
-    @Operation(summary = "Registrar contacto de transferencia",
-                description = "Permite registrar un nuevo contacto de transferencia.",
+    @Operation(summary = "Registrar contacto emisor/destinatario de la transacción.",
+                description = "Permite registrar un nuevo contacto emisor/destinatario de la transacción.",
                 responses = {
                     @ApiResponse(responseCode = "201", description = "Contacto registrado correctamente"),
                     @ApiResponse(responseCode = "400", description = "Error al registrar el contacto"),
@@ -94,8 +94,8 @@ public class TransaccionController {
         return new ResponseEntity<>(nuevoContacto, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Listar contactos de transferencia por espacio de trabajo",
-                description = "Permite listar los contactos de transferencia asociados a un espacio de trabajo.",
+    @Operation(summary = "Listar contactos de transacción por espacio de trabajo",
+                description = "Permite listar los contactos de transacción asociados a un espacio de trabajo.",
                 responses = {
                     @ApiResponse(responseCode = "200", description = "Contactos listados correctamente"),
                     @ApiResponse(responseCode = "404", description = "Espacio de trabajo no encontrado"),
@@ -134,7 +134,7 @@ public class TransaccionController {
     }
 
     @Operation(summary = "Buscar transacciones recientes",
-                description = "Busca las ultimas 5 transaciones realizadas en un espacio de trabajo.",
+                description = "Busca las ultimas 6 transaciones realizadas en un espacio de trabajo.",
                 responses = {
                     @ApiResponse(responseCode = "200", description = "Transacciones encontradas"),
                     @ApiResponse(responseCode = "400", description = "Error en los criterios de búsqueda"),

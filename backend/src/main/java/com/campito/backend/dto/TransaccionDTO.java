@@ -9,11 +9,13 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
 public record TransaccionDTO(
     Long id,
     @NotNull(message = "La fecha no puede ser nula")
+    @PastOrPresent(message = "La fecha debe ser en el pasado o presente")
     LocalDate fecha,
     @NotNull(message = "El monto no puede ser nulo")
     @Min(value = 0, message = "El monto no puede ser negativo")
