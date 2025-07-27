@@ -14,12 +14,12 @@ public class Usuario {
     private String nombre;
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
-    @Column(name = "foto_perfil", length = 512)
+    @Column(name = "foto_perfil", length = 256)
     private String fotoPerfil;
     @Enumerated(EnumType.STRING)
-    @Column(name = "proveedor")
+    @Column(name = "proveedor", nullable = false, length = 50)
     private ProveedorAutenticacion proveedor;
-    @Column(name = "id_proveedor", length = 255)
+    @Column(name = "id_proveedor", length = 256)
     private String idProveedor;
     @Column(name = "rol", nullable = false, length = 50)
     private String rol;
