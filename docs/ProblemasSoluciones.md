@@ -24,3 +24,13 @@ Pude solucionar el problema, lo que hice fue transformar el mes y año que son i
 - 31/01/2025
 Luego utiliza un between en la query para buscar todas las transacciones que sucedieron dentro de esa fecha.
 El unico inconveniente es que como está implementada la solución, si no se ingresa un año no se filtra por mes tampoco. En el front agregaré alguna restriccion que si no se ingresa un año no se puede elegir un mes.
+
+## Problema 3: Autenticación de usuario mediante la API de Google
+
+### Problema
+
+Estuve intentando implementar en la aplicación la autenticación de Google sin conocimientos previos algunos, con mucha ayuda de la IA (se utilizó Gemini CLI para esto). Se configuró las credenciales en la página de Google Cloud, se implementó las clases y metodos necesarios para este propósito, incluso de modificó el SecurityConfig.java para que funcionara. El inconveniente que se presentó es que el servicio autenticaba el usuario, pero el mismo no se guardaba en la base de datos. Probablemente es el inconveniente mas grande que tuve durante el desarrollo de este proyecto. Es un requerimiento clave para este sistema, por lo tanto se trabajó en la resolución de este problema.
+
+### Solución
+
+Finalmente, luego de muchas iteraciones con la IA y muchas hipótesis que fuimos armando y descartando, hallamos el problema. Le pedí a la IA que implemente algunos logs que nos permita ver que estaba pasando entre la aplicación y la base de datos. Luego de correr la aplicación e intentar autenticarme pude obtener un registro de todo lo que ocurría. Generé un archivo con todas las salidas del sistema para evaluarlo junto con la IA. Luego esta dió con la solución, basicamente se tuvo que modificar la clase service que se encargaba de la autenticación de usuario, para que esta extienda de OidcUserService y la clase de modelo CustomOAuth2User implemente OidcUser. Antes de esto, estas clases extendían e implementaban respectivamente otras cosas las cuales no tenían compatibilidad con los datos que me brindaba el servicio de google.
