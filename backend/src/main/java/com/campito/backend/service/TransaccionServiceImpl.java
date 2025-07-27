@@ -71,16 +71,23 @@ public class TransaccionServiceImpl implements TransaccionService {
             throw new IllegalArgumentException("El motivo de la transaccion no puede ser nulo");
         }
 
+        // Buscar el espacio de trabajo y el motivo de la transacción si existen
+        EspacioTrabajo espacio = espacioRepository.findById(transaccionDTO.idEspacioTrabajo()).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + transaccionDTO.idEspacioTrabajo() + " no encontrado"));
+        MotivoTransaccion motivo = motivoRepository.findById(transaccionDTO.idMotivo()).orElseThrow(() -> new EntityNotFoundException("Motivo de transacción con ID " + transaccionDTO.idMotivo() + " no encontrado"));
+
+        // Crear una nueva transaccion con los datos
         Transaccion transaccion = transaccionDTO.toTransaccion();
+
+        // Si se proporciona un ID de contacto, buscar el contacto y asignarlo a la transacción
+        if(transaccionDTO.idContacto() != null) {
+            ContactoTransferencia contacto = contactoRepository.findById(transaccionDTO.idContacto()).orElseThrow(() -> new EntityNotFoundException("Contacto de transferencia con ID " + transaccionDTO.idContacto() + " no encontrado"));
+            transaccion.setContacto(contacto);
+        }
 
         // Agregar fecha de creacion actual en la zona horaria de Buenos Aires (GMT-3)
         ZoneId buenosAiresZone = ZoneId.of("America/Argentina/Buenos_Aires");
         ZonedDateTime nowInBuenosAires = ZonedDateTime.now(buenosAiresZone);
         transaccion.setFechaCreacion(nowInBuenosAires.toLocalDateTime());
-
-        EspacioTrabajo espacio = espacioRepository.findById(transaccionDTO.idEspacioTrabajo()).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + transaccionDTO.idEspacioTrabajo() + " no encontrado"));
-
-        MotivoTransaccion motivo = motivoRepository.findById(transaccionDTO.idMotivo()).orElseThrow(() -> new EntityNotFoundException("Motivo de transacción con ID " + transaccionDTO.idMotivo() + " no encontrado"));
 
         // Actualizar saldo en el espacio de trabajo
         if(transaccion.getTipo().equals(TipoTransaccion.INGRESO)) {
@@ -95,12 +102,7 @@ public class TransaccionServiceImpl implements TransaccionService {
         transaccion.setEspacioTrabajo(espacio);
         transaccion.setMotivo(motivo);
 
-        // Si se proporciona un ID de contacto, buscar el contacto y asignarlo a la transacción
-        if(transaccionDTO.idContacto() != null) {
-            ContactoTransferencia contacto = contactoRepository.findById(transaccionDTO.idContacto()).orElseThrow(() -> new EntityNotFoundException("Contacto de transferencia con ID " + transaccionDTO.idContacto() + " no encontrado"));
-            transaccion.setContacto(contacto);
-        }
-
+        // Guardar la transacción en la base de datos
         transaccionRepository.save(transaccion);
         return new TransaccionDTO(
             transaccion.getId(),
@@ -185,6 +187,9 @@ public class TransaccionServiceImpl implements TransaccionService {
         if(contactoDTO == null || contactoDTO.nombre() == null || contactoDTO.nombre().isEmpty()) {
             throw new IllegalArgumentException("El contacto no puede ser nulo");
         }
+        if(contactoDTO.idEspacioTrabajo() == null) {
+            throw new IllegalArgumentException("El espacio de trabajo del contacto no puede ser nulo");
+        }
 
         ContactoTransferencia contacto = contactoDTO.toContactoTransferencia();
 
@@ -200,6 +205,9 @@ public class TransaccionServiceImpl implements TransaccionService {
     public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
         if(motivoDTO == null || motivoDTO.motivo() == null || motivoDTO.motivo().isEmpty()) {
             throw new IllegalArgumentException("El motivo no puede ser nulo");
+        }
+        if(motivoDTO.idEspacioTrabajo() == null) {
+            throw new IllegalArgumentException("El espacio de trabajo del motivo no puede ser nulo");
         }
 
         MotivoTransaccion motivo = motivoDTO.toMotivoTransaccion();
