@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+        Este archivo de configuracion de Logback es detectado automaticamente por Spring Boot.
+        Permite un control mas avanzado sobre los logs que el que se puede lograr solo con application.properties.
+    -->
+
+    <!-- Importamos configuraciones base de Spring Boot para no empezar de cero -->
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!--
+        ====================================================================
+        CONFIGURACION PARA EL PERFIL DE DESARROLLO (dev)
+        ====================================================================
+    -->
+    <springProfile name="dev">
+        <!--
+            En desarrollo, la configuracion por defecto de Spring (consola) es suficiente.
+            Las propiedades definidas en application-dev.properties seran aplicadas.
+            Podriamos anadir appenders especificos para dev aqui si fuera necesario.
+        -->
+        <logger name="com.campito.backend" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+        </logger>
+    </springProfile>
+
+    <!--
+        ====================================================================
+        CONFIGURACION PARA EL PERFIL DE PRODUCCION (prod)
+        ====================================================================
+    -->
+    <springProfile name="prod">
+        <!--
+            En produccion, queremos logs estructurados (JSON) para un facil procesamiento
+            y una politica de rotacion de archivos para no llenar el disco.
+        -->
+
+        <!--
+            Appender para escribir logs en formato JSON a un archivo con rotacion.
+            Esto es ideal para sistemas de recoleccion de logs como ELK, Splunk, etc.
+        -->
+        <appender name="ROLLING_FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/backend-prod.log</file>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- Rota diariamente -->
+                <fileNamePattern>logs/backend-prod.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+                <!-- Mantiene 30 dias de logs -->
+                <maxHistory>30</maxHistory>
+                <!-- Comprime los logs antiguos en formato .gz -->
+                <cleanHistoryOnStart>true</cleanHistoryOnStart>
+            </rollingPolicy>
+        </appender>
+
+        <!--
+            Appender de consola para produccion. Lo mantenemos por si se necesita depurar
+            directamente en el servidor, pero el principal es el archivo.
+        -->
+        <appender name="PROD_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <!--
+            Configuracion del logger raiz (root).
+            Todos los logs iran al archivo JSON y a la consola de produccion.
+        -->
+        <root level="WARN">
+            <appender-ref ref="ROLLING_FILE_JSON" />
+            <appender-ref ref="PROD_CONSOLE" />
+        </root>
+
+        <!--
+            Podemos ser mas especificos para nuestro paquete si es necesario.
+            Por ejemplo, si quisieramos que nuestro codigo tambien logueara DEBUG en produccion (no recomendado).
+        -->
+        <logger name="com.campito.backend" level="WARN" additivity="false">
+            <appender-ref ref="ROLLING_FILE_JSON" />
+            <appender-ref ref="PROD_CONSOLE" />
+        </logger>
+
+    </springProfile>
+
+</configuration>
