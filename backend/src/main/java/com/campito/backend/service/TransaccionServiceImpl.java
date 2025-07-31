@@ -6,6 +6,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,8 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class TransaccionServiceImpl implements TransaccionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TransaccionServiceImpl.class);
+
     private final TransaccionRepository transaccionRepository;
     private final EspacioTrabajoRepository espacioRepository;
     private final MotivoTransaccionRepository motivoRepository;
@@ -61,250 +65,337 @@ public class TransaccionServiceImpl implements TransaccionService {
     @Override
     @Transactional
     public TransaccionDTO registrarTransaccion(TransaccionDTO transaccionDTO) {
-        if(transaccionDTO == null) {
+        if (transaccionDTO == null) {
+            logger.warn("Intento de registrar una TransaccionDTO nula.");
             throw new IllegalArgumentException("La transaccion no puede ser nula");
         }
-        if(transaccionDTO.idEspacioTrabajo() == null) {
-            throw new IllegalArgumentException("El espacio de trabajo de la transaccion no puede ser nulo");
+        logger.info("Iniciando registro de transaccion tipo {} por monto {} en espacio ID {}", transaccionDTO.tipo(), transaccionDTO.monto(), transaccionDTO.idEspacioTrabajo());
+        try {
+            if (transaccionDTO.idEspacioTrabajo() == null) {
+                logger.warn("ID de espacio de trabajo nulo al registrar transaccion.");
+                throw new IllegalArgumentException("El espacio de trabajo de la transaccion no puede ser nulo");
+            }
+            if (transaccionDTO.idMotivo() == null) {
+                logger.warn("ID de motivo nulo al registrar transaccion.");
+                throw new IllegalArgumentException("El motivo de la transaccion no puede ser nulo");
+            }
+
+            EspacioTrabajo espacio = espacioRepository.findById(transaccionDTO.idEspacioTrabajo()).orElseThrow(() -> {
+                String msg = "Espacio de trabajo con ID " + transaccionDTO.idEspacioTrabajo() + " no encontrado";
+                logger.warn(msg);
+                return new EntityNotFoundException(msg);
+            });
+            MotivoTransaccion motivo = motivoRepository.findById(transaccionDTO.idMotivo()).orElseThrow(() -> {
+                String msg = "Motivo de transaccion con ID " + transaccionDTO.idMotivo() + " no encontrado";
+                logger.warn(msg);
+                return new EntityNotFoundException(msg);
+            });
+
+            Transaccion transaccion = transaccionDTO.toTransaccion();
+
+            if (transaccionDTO.idContacto() != null) {
+                ContactoTransferencia contacto = contactoRepository.findById(transaccionDTO.idContacto()).orElseThrow(() -> {
+                    String msg = "Contacto de transferencia con ID " + transaccionDTO.idContacto() + " no encontrado";
+                    logger.warn(msg);
+                    return new EntityNotFoundException(msg);
+                });
+                transaccion.setContacto(contacto);
+            }
+
+            ZoneId buenosAiresZone = ZoneId.of("America/Argentina/Buenos_Aires");
+            ZonedDateTime nowInBuenosAires = ZonedDateTime.now(buenosAiresZone);
+            transaccion.setFechaCreacion(nowInBuenosAires.toLocalDateTime());
+
+            if (transaccion.getTipo().equals(TipoTransaccion.INGRESO)) {
+                espacio.setSaldo(espacio.getSaldo() + transaccion.getMonto());
+            } else {
+                espacio.setSaldo(espacio.getSaldo() - transaccion.getMonto());
+            }
+            espacioRepository.save(espacio);
+
+            transaccion.setEspacioTrabajo(espacio);
+            transaccion.setMotivo(motivo);
+
+            Transaccion transaccionGuardada = transaccionRepository.save(transaccion);
+            logger.info("Transaccion ID {} registrada exitosamente en espacio ID {}. Nuevo saldo: {}", transaccionGuardada.getId(), espacio.getId(), espacio.getSaldo());
+            
+            return new TransaccionDTO(
+                transaccionGuardada.getId(),
+                transaccionGuardada.getFecha(),
+                transaccionGuardada.getMonto(),
+                transaccionGuardada.getTipo(),
+                transaccionGuardada.getDescripcion(),
+                transaccionGuardada.getNombreCompletoAuditoria(),
+                transaccionGuardada.getEspacioTrabajo().getId(),
+                transaccionGuardada.getMotivo().getId(),
+                transaccionGuardada.getContacto() != null ? transaccionGuardada.getContacto().getId() : null
+            );
+        } catch (Exception e) {
+            logger.error("Error inesperado al registrar transaccion en espacio ID {}: {}", transaccionDTO.idEspacioTrabajo(), e.getMessage(), e);
+            throw e;
         }
-        if(transaccionDTO.idMotivo() == null) {
-            throw new IllegalArgumentException("El motivo de la transaccion no puede ser nulo");
-        }
-
-        // Buscar el espacio de trabajo y el motivo de la transacción si existen
-        EspacioTrabajo espacio = espacioRepository.findById(transaccionDTO.idEspacioTrabajo()).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + transaccionDTO.idEspacioTrabajo() + " no encontrado"));
-        MotivoTransaccion motivo = motivoRepository.findById(transaccionDTO.idMotivo()).orElseThrow(() -> new EntityNotFoundException("Motivo de transacción con ID " + transaccionDTO.idMotivo() + " no encontrado"));
-
-        // Crear una nueva transaccion con los datos
-        Transaccion transaccion = transaccionDTO.toTransaccion();
-
-        // Si se proporciona un ID de contacto, buscar el contacto y asignarlo a la transacción
-        if(transaccionDTO.idContacto() != null) {
-            ContactoTransferencia contacto = contactoRepository.findById(transaccionDTO.idContacto()).orElseThrow(() -> new EntityNotFoundException("Contacto de transferencia con ID " + transaccionDTO.idContacto() + " no encontrado"));
-            transaccion.setContacto(contacto);
-        }
-
-        // Agregar fecha de creacion actual en la zona horaria de Buenos Aires (GMT-3)
-        ZoneId buenosAiresZone = ZoneId.of("America/Argentina/Buenos_Aires");
-        ZonedDateTime nowInBuenosAires = ZonedDateTime.now(buenosAiresZone);
-        transaccion.setFechaCreacion(nowInBuenosAires.toLocalDateTime());
-
-        // Actualizar saldo en el espacio de trabajo
-        if(transaccion.getTipo().equals(TipoTransaccion.INGRESO)) {
-            espacio.setSaldo(espacio.getSaldo() + transaccion.getMonto());
-        } 
-        else {
-            espacio.setSaldo(espacio.getSaldo() - transaccion.getMonto());
-        }
-        espacioRepository.save(espacio);
-        
-        // Asignar espacio de trabajo y motivo a la transacción
-        transaccion.setEspacioTrabajo(espacio);
-        transaccion.setMotivo(motivo);
-
-        // Guardar la transacción en la base de datos
-        transaccionRepository.save(transaccion);
-        return new TransaccionDTO(
-            transaccion.getId(),
-            transaccion.getFecha(),
-            transaccion.getMonto(),
-            transaccion.getTipo(),
-            transaccion.getDescripcion() != null ? transaccion.getDescripcion() : null,
-            transaccion.getNombreCompletoAuditoria(),
-            transaccion.getEspacioTrabajo().getId(),
-            transaccion.getMotivo().getId(),
-            transaccion.getContacto() != null ? transaccion.getContacto().getId() : null
-        );
     }
 
     @Override
     @Transactional
     public void removerTransaccion(Long id) {
         if (id == null) {
+            logger.warn("Intento de remover transaccion con ID nulo.");
             throw new IllegalArgumentException("El ID de la transacción no puede ser nulo");
         }
+        logger.info("Iniciando remocion de transaccion ID: {}", id);
+        try {
+            Transaccion transaccion = transaccionRepository.findById(id)
+                .orElseThrow(() -> {
+                    String msg = "Transaccion con ID " + id + " no encontrada";
+                    logger.warn(msg);
+                    return new EntityNotFoundException(msg);
+                });
 
-        Transaccion transaccion = transaccionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Transacción con ID " + id + " no encontrada"));
+            EspacioTrabajo espacio = transaccion.getEspacioTrabajo();
+            if (transaccion.getTipo().equals(TipoTransaccion.INGRESO)) {
+                espacio.setSaldo(espacio.getSaldo() - transaccion.getMonto());
+            } else {
+                espacio.setSaldo(espacio.getSaldo() + transaccion.getMonto());
+            }
 
-        // Actualizar el saldo del espacio de trabajo asociado
-
-        EspacioTrabajo espacio = transaccion.getEspacioTrabajo();
-        if (transaccion.getTipo().equals(TipoTransaccion.INGRESO)) {
-            espacio.setSaldo(espacio.getSaldo() - transaccion.getMonto());
-        } else {
-            espacio.setSaldo(espacio.getSaldo() + transaccion.getMonto());
+            transaccionRepository.delete(transaccion);
+            espacioRepository.save(espacio);
+            logger.info("Transaccion ID {} removida exitosamente. Saldo del espacio ID {} actualizado a {}", id, espacio.getId(), espacio.getSaldo());
+        } catch (Exception e) {
+            logger.error("Error inesperado al remover transaccion ID {}: {}", id, e.getMessage(), e);
+            throw e;
         }
-
-        transaccionRepository.delete(transaccion);
-
-        espacioRepository.save(espacio);
     }
 
     @Override
     public List<TransaccionListadoDTO> buscarTransaccion(TransaccionBusquedaDTO datosBusqueda) {
         if (datosBusqueda == null) {
+            logger.warn("Intento de buscar transacciones con DTO de busqueda nulo.");
             throw new IllegalArgumentException("Los datos de búsqueda no pueden ser nulos");
         }
         if (datosBusqueda.idEspacioTrabajo() == null) {
+            logger.warn("Intento de buscar transacciones con ID de espacio de trabajo nulo.");
             throw new IllegalArgumentException("El ID del espacio de trabajo no puede ser nulo");
         }
+        logger.info("Iniciando busqueda de transacciones para espacio ID {} con criterios: {}", datosBusqueda.idEspacioTrabajo(), datosBusqueda);
+        try {
+            Specification<Transaccion> spec = (root, query, cb) -> cb.equal(root.get("espacioTrabajo").get("id"), datosBusqueda.idEspacioTrabajo());
 
-        Specification<Transaccion> spec = (root, query, cb) -> cb.equal(root.get("espacioTrabajo").get("id"), datosBusqueda.idEspacioTrabajo());
-
-        // Filtrado por fecha usando rango
-        if (datosBusqueda.anio() != null) {
-            int anio = datosBusqueda.anio();
-            int mes = datosBusqueda.mes() != null ? datosBusqueda.mes() : 1;
-            java.time.LocalDate desde = java.time.LocalDate.of(anio, mes, 1);
-            java.time.LocalDate hasta;
-            if (datosBusqueda.mes() != null) {
-                // Último día del mes
-                hasta = desde.withDayOfMonth(desde.lengthOfMonth());
-            } else {
-                // Último día del año
-                hasta = java.time.LocalDate.of(anio, 12, 31);
+            if (datosBusqueda.anio() != null) {
+                int anio = datosBusqueda.anio();
+                int mes = datosBusqueda.mes() != null ? datosBusqueda.mes() : 1;
+                java.time.LocalDate desde = java.time.LocalDate.of(anio, mes, 1);
+                java.time.LocalDate hasta;
+                if (datosBusqueda.mes() != null) {
+                    hasta = desde.withDayOfMonth(desde.lengthOfMonth());
+                } else {
+                    hasta = java.time.LocalDate.of(anio, 12, 31);
+                }
+                spec = spec.and((root, query, cb) -> cb.between(root.get("fecha"), desde, hasta));
+            } else if(datosBusqueda.mes() != null){
+                logger.warn("Se especifico mes sin anio en la busqueda de transacciones para espacio ID {}.", datosBusqueda.idEspacioTrabajo());
+                throw new IllegalArgumentException("Si no se especifica el año, no se puede especificar el mes");
             }
-            spec = spec.and((root, query, cb) -> cb.between(root.get("fecha"), desde, hasta));
-        } else if(datosBusqueda.mes() != null){
-            throw new IllegalArgumentException("Si no se especifica el año, no se puede especificar el mes");
-        }
 
-        if (datosBusqueda.motivo() != null && !datosBusqueda.motivo().isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("motivo").get("motivo")), "%" + datosBusqueda.motivo().toLowerCase() + "%"));
-        }
-        if (datosBusqueda.contacto() != null && !datosBusqueda.contacto().isEmpty()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("contacto").get("nombre")), "%" + datosBusqueda.contacto().toLowerCase() + "%"));
-        }
+            if (datosBusqueda.motivo() != null && !datosBusqueda.motivo().isEmpty()) {
+                spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("motivo").get("motivo")), "%" + datosBusqueda.motivo().toLowerCase() + "%"));
+            }
+            if (datosBusqueda.contacto() != null && !datosBusqueda.contacto().isEmpty()) {
+                spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("contacto").get("nombre")), "%" + datosBusqueda.contacto().toLowerCase() + "%"));
+            }
 
-        List<Transaccion> transacciones = transaccionRepository.findAll(spec);
-        return crearListadoTransacciones(transacciones);
+            List<Transaccion> transacciones = transaccionRepository.findAll(spec);
+            logger.info("Busqueda de transacciones para espacio ID {} finalizada. Se encontraron {} resultados.", datosBusqueda.idEspacioTrabajo(), transacciones.size());
+            return crearListadoTransacciones(transacciones);
+        } catch (Exception e) {
+            logger.error("Error inesperado durante la busqueda de transacciones para espacio ID {}: {}", datosBusqueda.idEspacioTrabajo(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     @Transactional
     public ContactoDTO registrarContactoTransferencia(ContactoDTO contactoDTO) {
-        if(contactoDTO == null || contactoDTO.nombre() == null || contactoDTO.nombre().isEmpty()) {
+        if (contactoDTO == null) {
+            logger.warn("Intento de registrar un ContactoDTO nulo.");
             throw new IllegalArgumentException("El contacto no puede ser nulo");
         }
-        if(contactoDTO.idEspacioTrabajo() == null) {
-            throw new IllegalArgumentException("El espacio de trabajo del contacto no puede ser nulo");
+        logger.info("Iniciando registro de contacto '{}' en espacio ID {}", contactoDTO.nombre(), contactoDTO.idEspacioTrabajo());
+        try {
+            if (contactoDTO.nombre() == null || contactoDTO.nombre().isEmpty()) {
+                logger.warn("Intento de registrar un contacto con nombre nulo o vacio.");
+                throw new IllegalArgumentException("El contacto no puede ser nulo");
+            }
+            if (contactoDTO.idEspacioTrabajo() == null) {
+                logger.warn("Intento de registrar un contacto con ID de espacio de trabajo nulo.");
+                throw new IllegalArgumentException("El espacio de trabajo del contacto no puede ser nulo");
+            }
+
+            ContactoTransferencia contacto = contactoDTO.toContactoTransferencia();
+
+            EspacioTrabajo espacio = espacioRepository.findById(contactoDTO.idEspacioTrabajo()).orElseThrow(() -> {
+                String msg = "Espacio de trabajo con ID " + contactoDTO.idEspacioTrabajo() + " no encontrado";
+                logger.warn(msg);
+                return new EntityNotFoundException(msg);
+            });
+            contacto.setEspacioTrabajo(espacio);
+
+            ContactoTransferencia contactoGuardado = contactoRepository.save(contacto);
+            logger.info("Contacto '{}' (ID: {}) registrado exitosamente en espacio ID {}.", contactoGuardado.getNombre(), contactoGuardado.getId(), espacio.getId());
+            return new ContactoDTO(contactoGuardado.getId(), contactoGuardado.getNombre(), contactoGuardado.getEspacioTrabajo().getId());
+        } catch (Exception e) {
+            logger.error("Error inesperado al registrar contacto '{}' en espacio ID {}: {}", contactoDTO.nombre(), contactoDTO.idEspacioTrabajo(), e.getMessage(), e);
+            throw e;
         }
-
-        ContactoTransferencia contacto = contactoDTO.toContactoTransferencia();
-
-        EspacioTrabajo espacio = espacioRepository.findById(contactoDTO.idEspacioTrabajo()).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + contactoDTO.idEspacioTrabajo() + " no encontrado"));
-        contacto.setEspacioTrabajo(espacio);
-
-        contactoRepository.save(contacto);
-        return new ContactoDTO(contacto.getId(), contacto.getNombre(), contacto.getEspacioTrabajo().getId());
     }
 
     @Override
     @Transactional
     public MotivoDTO nuevoMotivoTransaccion(MotivoDTO motivoDTO) {
-        if(motivoDTO == null || motivoDTO.motivo() == null || motivoDTO.motivo().isEmpty()) {
+        if (motivoDTO == null) {
+            logger.warn("Intento de registrar un MotivoDTO nulo.");
             throw new IllegalArgumentException("El motivo no puede ser nulo");
         }
-        if(motivoDTO.idEspacioTrabajo() == null) {
-            throw new IllegalArgumentException("El espacio de trabajo del motivo no puede ser nulo");
+        logger.info("Iniciando registro de motivo '{}' en espacio ID {}", motivoDTO.motivo(), motivoDTO.idEspacioTrabajo());
+        try {
+            if (motivoDTO.motivo() == null || motivoDTO.motivo().isEmpty()) {
+                logger.warn("Intento de registrar un motivo con nombre nulo o vacio.");
+                throw new IllegalArgumentException("El motivo no puede ser nulo");
+            }
+            if (motivoDTO.idEspacioTrabajo() == null) {
+                logger.warn("Intento de registrar un motivo con ID de espacio de trabajo nulo.");
+                throw new IllegalArgumentException("El espacio de trabajo del motivo no puede ser nulo");
+            }
+
+            MotivoTransaccion motivo = motivoDTO.toMotivoTransaccion();
+
+            EspacioTrabajo espacio = espacioRepository.findById(motivoDTO.idEspacioTrabajo()).orElseThrow(() -> {
+                String msg = "Espacio de trabajo con ID " + motivoDTO.idEspacioTrabajo() + " no encontrado";
+                logger.warn(msg);
+                return new EntityNotFoundException(msg);
+            });
+            motivo.setEspacioTrabajo(espacio);
+
+            MotivoTransaccion motivoGuardado = motivoRepository.save(motivo);
+            logger.info("Motivo '{}' (ID: {}) registrado exitosamente en espacio ID {}.", motivoGuardado.getMotivo(), motivoGuardado.getId(), espacio.getId());
+            return new MotivoDTO(motivoGuardado.getId(), motivoGuardado.getMotivo(), motivoGuardado.getEspacioTrabajo().getId());
+        } catch (Exception e) {
+            logger.error("Error inesperado al registrar motivo '{}' en espacio ID {}: {}", motivoDTO.motivo(), motivoDTO.idEspacioTrabajo(), e.getMessage(), e);
+            throw e;
         }
-
-        MotivoTransaccion motivo = motivoDTO.toMotivoTransaccion();
-
-        EspacioTrabajo espacio = espacioRepository.findById(motivoDTO.idEspacioTrabajo()).orElseThrow(() -> new EntityNotFoundException("Espacio de trabajo con ID " + motivoDTO.idEspacioTrabajo() + " no encontrado"));
-        motivo.setEspacioTrabajo(espacio);
-
-        motivoRepository.save(motivo);
-        return new MotivoDTO(motivo.getId(), motivo.getMotivo(), motivo.getEspacioTrabajo().getId());
     }
 
     @Override
     public List<ContactoListadoDTO> listarContactos(Long idEspacioTrabajo) {
-        if(idEspacioTrabajo == null) {
+        if (idEspacioTrabajo == null) {
+            logger.warn("Intento de listar contactos con ID de espacio de trabajo nulo.");
             throw new IllegalArgumentException("El id del espacio de trabajo no puede ser nulo");
         }
-
-        return contactoRepository.findByEspacioTrabajo_Id(idEspacioTrabajo).stream()
-                .map(contacto -> new ContactoListadoDTO(contacto.getId(), contacto.getNombre()))
-                .toList();
+        logger.info("Listando contactos para el espacio de trabajo ID: {}", idEspacioTrabajo);
+        try {
+            List<ContactoListadoDTO> contactos = contactoRepository.findByEspacioTrabajo_Id(idEspacioTrabajo).stream()
+                    .map(contacto -> new ContactoListadoDTO(contacto.getId(), contacto.getNombre()))
+                    .toList();
+            logger.info("Se encontraron {} contactos para el espacio ID {}.", contactos.size(), idEspacioTrabajo);
+            return contactos;
+        } catch (Exception e) {
+            logger.error("Error inesperado al listar contactos para el espacio ID {}: {}", idEspacioTrabajo, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public List<MotivoListadoDTO> listarMotivos(Long idEspacioTrabajo) {
-        if(idEspacioTrabajo == null) {
+        if (idEspacioTrabajo == null) {
+            logger.warn("Intento de listar motivos con ID de espacio de trabajo nulo.");
             throw new IllegalArgumentException("El id del espacio de trabajo no puede ser nulo");
         }
-
-        return motivoRepository.findByEspacioTrabajo_Id(idEspacioTrabajo).stream()
-                .map(motivo -> new MotivoListadoDTO(motivo.getId(), motivo.getMotivo()))
-                .toList();
+        logger.info("Listando motivos para el espacio de trabajo ID: {}", idEspacioTrabajo);
+        try {
+            List<MotivoListadoDTO> motivos = motivoRepository.findByEspacioTrabajo_Id(idEspacioTrabajo).stream()
+                    .map(motivo -> new MotivoListadoDTO(motivo.getId(), motivo.getMotivo()))
+                    .toList();
+            logger.info("Se encontraron {} motivos para el espacio ID {}.", motivos.size(), idEspacioTrabajo);
+            return motivos;
+        } catch (Exception e) {
+            logger.error("Error inesperado al listar motivos para el espacio ID {}: {}", idEspacioTrabajo, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public List<TransaccionListadoDTO> buscarTransaccionesRecientes(Long idEspacioTrabajo) {
         if (idEspacioTrabajo == null) {
+            logger.warn("Intento de buscar transacciones recientes con ID de espacio de trabajo nulo.");
             throw new IllegalArgumentException("El id del espacio de trabajo no puede ser nulo");
         }
+        logger.info("Buscando ultimas 6 transacciones para el espacio de trabajo ID: {}", idEspacioTrabajo);
+        try {
+            java.time.ZoneId buenosAiresZone = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
+            java.time.ZonedDateTime nowInBuenosAires = java.time.ZonedDateTime.now(buenosAiresZone);
+            java.time.LocalDateTime fechaActual = nowInBuenosAires.toLocalDateTime();
 
-        // Zona horaria Buenos Aires
-        java.time.ZoneId buenosAiresZone = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
-        java.time.ZonedDateTime nowInBuenosAires = java.time.ZonedDateTime.now(buenosAiresZone);
-        java.time.LocalDateTime fechaActual = nowInBuenosAires.toLocalDateTime();
+            Specification<Transaccion> spec = (root, query, cb) -> cb.and(
+                cb.equal(root.get("espacioTrabajo").get("id"), idEspacioTrabajo),
+                cb.lessThanOrEqualTo(root.get("fechaCreacion"), fechaActual)
+            );
 
-        // Specification para filtrar por espacio de trabajo y fechaCreacion <= fechaActual
-        Specification<Transaccion> spec = (root, query, cb) -> cb.and(
-            cb.equal(root.get("espacioTrabajo").get("id"), idEspacioTrabajo),
-            cb.lessThanOrEqualTo(root.get("fechaCreacion"), fechaActual)
-        );
-
-        // Usar PageRequest para limitar y ordenar
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "fechaCreacion"));
-        List<Transaccion> transacciones = transaccionRepository.findAll(spec, pageable).getContent();
-        return crearListadoTransacciones(transacciones);
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 6, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "fechaCreacion"));
+            List<Transaccion> transacciones = transaccionRepository.findAll(spec, pageable).getContent();
+            logger.info("Se encontraron {} transacciones recientes para el espacio ID {}.", transacciones.size(), idEspacioTrabajo);
+            return crearListadoTransacciones(transacciones);
+        } catch (Exception e) {
+            logger.error("Error inesperado al buscar transacciones recientes para el espacio ID {}: {}", idEspacioTrabajo, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
     public DashboardInfoDTO obtenerDashboardInfo(Long idEspacio) {
-        
-        LocalDate fechaLimite = LocalDate.now().minusMonths(6);
+        logger.info("Obteniendo informacion del dashboard para el espacio ID: {}", idEspacio);
+        try {
+            LocalDate fechaLimite = LocalDate.now().minusMonths(6);
 
-        // Generar lista de los últimos 6 meses en formato YYYY-MM
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM");
-        List<String> ultimosMeses = new java.util.ArrayList<>();
-        LocalDate actual = LocalDate.now();
-        for (int i = 5; i >= 0; i--) {
-            ultimosMeses.add(actual.minusMonths(i).format(formatter));
-        }
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM");
+            List<String> ultimosMeses = new java.util.ArrayList<>();
+            LocalDate actual = LocalDate.now();
+            for (int i = 5; i >= 0; i--) {
+                ultimosMeses.add(actual.minusMonths(i).format(formatter));
+            }
 
-        List<IngresosGastosMesDTO> ingresosGastosMes = dashboardRepository.findIngresosVsGastos(idEspacio, fechaLimite);
-        java.util.Map<String, IngresosGastosMesDTO> mapIngresosGastos = new java.util.HashMap<>();
-        for (IngresosGastosMesDTO dto : ingresosGastosMes) {
-            mapIngresosGastos.put(dto.getMes(), dto);
-        }
-        List<IngresosGastosMesDTO> ingresosGastosMesCompletos = new java.util.ArrayList<>();
-        for (String mes : ultimosMeses) {
-            ingresosGastosMesCompletos.add(mapIngresosGastos.getOrDefault(mes, new com.campito.backend.dto.IngresosGastosMesDTOImpl(mes, BigDecimal.ZERO, BigDecimal.ZERO)));
-        }
+            List<IngresosGastosMesDTO> ingresosGastosMes = dashboardRepository.findIngresosVsGastos(idEspacio, fechaLimite);
+            java.util.Map<String, IngresosGastosMesDTO> mapIngresosGastos = new java.util.HashMap<>();
+            for (IngresosGastosMesDTO dto : ingresosGastosMes) {
+                mapIngresosGastos.put(dto.getMes(), dto);
+            }
+            List<IngresosGastosMesDTO> ingresosGastosMesCompletos = new java.util.ArrayList<>();
+            for (String mes : ultimosMeses) {
+                ingresosGastosMesCompletos.add(mapIngresosGastos.getOrDefault(mes, new com.campito.backend.dto.IngresosGastosMesDTOImpl(mes, BigDecimal.ZERO, BigDecimal.ZERO)));
+            }
 
-        List<SaldoAcumuladoMesDTO> saldosAcumulados = dashboardRepository.findSaldosAcumulados(idEspacio, fechaLimite);
-        java.util.Map<String, SaldoAcumuladoMesDTO> mapSaldos = new java.util.HashMap<>();
-        for (SaldoAcumuladoMesDTO dto : saldosAcumulados) {
-            mapSaldos.put(dto.getMes(), dto);
-        }
-        List<SaldoAcumuladoMesDTO> saldosAcumuladosCompletos = new java.util.ArrayList<>();
-        for (String mes : ultimosMeses) {
-            saldosAcumuladosCompletos.add(mapSaldos.getOrDefault(mes, new com.campito.backend.dto.SaldoAcumuladoMesDTOImpl(mes, BigDecimal.ZERO)));
-        }
+            List<SaldoAcumuladoMesDTO> saldosAcumulados = dashboardRepository.findSaldosAcumulados(idEspacio, fechaLimite);
+            java.util.Map<String, SaldoAcumuladoMesDTO> mapSaldos = new java.util.HashMap<>();
+            for (SaldoAcumuladoMesDTO dto : saldosAcumulados) {
+                mapSaldos.put(dto.getMes(), dto);
+            }
+            List<SaldoAcumuladoMesDTO> saldosAcumuladosCompletos = new java.util.ArrayList<>();
+            for (String mes : ultimosMeses) {
+                saldosAcumuladosCompletos.add(mapSaldos.getOrDefault(mes, new com.campito.backend.dto.SaldoAcumuladoMesDTOImpl(mes, BigDecimal.ZERO)));
+            }
 
-        // Distribucion de gastos: solo motivos con datos, no se puede completar motivos sin datos sin una lista de motivos
-        List<DistribucionGastoDTO> distribucionGastos = dashboardRepository.findDistribucionGastos(idEspacio, fechaLimite);
+            List<DistribucionGastoDTO> distribucionGastos = dashboardRepository.findDistribucionGastos(idEspacio, fechaLimite);
 
-        return new DashboardInfoDTO(
-            ingresosGastosMesCompletos,
-            distribucionGastos,
-            saldosAcumuladosCompletos
-        );
+            logger.info("Informacion del dashboard para el espacio ID {} generada exitosamente.", idEspacio);
+            return new DashboardInfoDTO(
+                ingresosGastosMesCompletos,
+                distribucionGastos,
+                saldosAcumuladosCompletos
+            );
+        } catch (Exception e) {
+            logger.error("Error inesperado al obtener informacion del dashboard para el espacio ID {}: {}", idEspacio, e.getMessage(), e);
+            throw e;
+        }
     }
 
     // Metodos auxiliares

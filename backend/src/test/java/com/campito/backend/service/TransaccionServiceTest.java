@@ -117,7 +117,7 @@ public class TransaccionServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             transaccionService.registrarTransaccion(dto);
         });
-        assertEquals("Motivo de transacción con ID 99 no encontrado", exception.getMessage());
+        assertEquals("Motivo de transaccion con ID 99 no encontrado", exception.getMessage());
         verify(transaccionRepository, never()).save(any(Transaccion.class));
     }
 
@@ -175,7 +175,7 @@ public class TransaccionServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             transaccionService.removerTransaccion(99L);
         });
-        assertEquals("Transacción con ID 99 no encontrada", exception.getMessage());
+        assertEquals("Transaccion con ID 99 no encontrada", exception.getMessage());
         verify(transaccionRepository, never()).delete(any(Transaccion.class));
     }
 
