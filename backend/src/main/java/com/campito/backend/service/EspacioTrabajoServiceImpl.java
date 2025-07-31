@@ -42,7 +42,6 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
             throw new IllegalArgumentException("El espacio de trabajo no puede ser nulo");
         }
 
-        // Ahora que sabemos que el DTO no es nulo, podemos loguear de forma segura.
         logger.info("Intentando registrar un nuevo espacio de trabajo con nombre: '{}'", espacioTrabajoDTO.nombre());
         try {
             Usuario usuario = usuarioRepository.findById(espacioTrabajoDTO.idUsuarioAdmin()).orElseThrow(() -> {
@@ -56,7 +55,6 @@ public class EspacioTrabajoServiceImpl implements EspacioTrabajoService {
             espacioRepository.save(espacioTrabajo);
             logger.info("Espacio de trabajo '{}' registrado exitosamente.", espacioTrabajo.getNombre());
         } catch (Exception e) {
-            // Log de error seguro que no asume que el DTO es valido, aunque en este punto ya lo hemos verificado.
             logger.error("Error inesperado al registrar espacio de trabajo con nombre: '{}'", espacioTrabajoDTO.nombre(), e);
             throw e;
         }

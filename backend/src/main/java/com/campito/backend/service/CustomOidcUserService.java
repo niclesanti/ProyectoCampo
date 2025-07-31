@@ -60,7 +60,6 @@ public class CustomOidcUserService extends OidcUserService {
 
         } catch (Exception e) {
             logger.error("Error critico durante la autenticacion para el email: {}. Causa: {}", email, e.getMessage(), e);
-            // Relanzar la excepcion es crucial para que Spring Security maneje el fallo.
             throw e;
         }
     }
