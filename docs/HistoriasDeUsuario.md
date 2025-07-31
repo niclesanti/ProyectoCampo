@@ -111,6 +111,15 @@
 * **Descripción**:
     * Como usuario, necesito exportar un listado de transacciones (que puede ser generado por una búsqueda) o reportes en una planilla de cálculo.
 
+## 11. Anotar movimientos en cuentas bancarias
+* **Número**: 11
+* **Nombre**: Anotar movimientos en cuentas bancarias
+* **Usuario**: Usuario
+* **Prioridad**: Alta
+* **Iteración**: 1
+* **Descripción**:
+    * Como usuario, me gustaría que cada vez que anoto una transaccion de ingreso/salida de dinero, pueda además agregarle a que, o desde cual cuenta bancaria se hace el movimiento (opcional). Me interesa que cada cuenta tenga algun nombre que la identifique (por ejemplo, cuenta-raul, cuenta-agustin, etc), la entidad financiera y el saldo actual que corresonde al espacio en el cual estamos trabajando.
+
 ## Características importantes del sistema:
 * Debe poder ser utilizado desde cualquier plataforma: Computadora, celular, Tablet.
 * Debe tener un diseño muy simple (usabilidad) y una estética moderna y minimalista.
