@@ -12,6 +12,7 @@ import com.campito.backend.dto.CuentaBancariaDTO;
 import com.campito.backend.dto.CuentaBancariaListadoDTO;
 import com.campito.backend.model.CuentaBancaria;
 import com.campito.backend.model.EspacioTrabajo;
+import com.campito.backend.model.TipoTransaccion;
 import com.campito.backend.dao.CuentaBancariaRepository;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 
@@ -75,7 +76,7 @@ public class CuentaBancariaServiceImpl implements CuentaBancariaService {
 
     @Override
     @Transactional
-    public void actualizarCuentaBancaria(Long id, Float monto) {
+    public CuentaBancaria actualizarCuentaBancaria(Long id, TipoTransaccion tipo, Float monto) {
         if (id == null || monto == null) {
             logger.warn("Intento de actualizar cuenta bancaria con parametros nulos. ID: {}, Monto: {}", id, monto);
             throw new IllegalArgumentException("El ID y el monto no pueden ser nulos");
@@ -88,9 +89,20 @@ public class CuentaBancariaServiceImpl implements CuentaBancariaService {
                     logger.warn(mensaje);
                     return new EntityNotFoundException(mensaje);
                 });
-            cuenta.setSaldoActual(cuenta.getSaldoActual() + monto);
+
+            if (tipo == TipoTransaccion.GASTO) {
+                if (cuenta.getSaldoActual() < monto) {
+                    logger.warn("Saldo insuficiente en la cuenta bancaria ID: {} para realizar la actualización de monto: {}", id, monto);
+                    throw new IllegalArgumentException("Saldo insuficiente en la cuenta bancaria");
+                }
+                cuenta.setSaldoActual(cuenta.getSaldoActual() - monto);
+            } else {
+                cuenta.setSaldoActual(cuenta.getSaldoActual() + monto);
+            }
+
             cuentaBancariaRepository.save(cuenta);
             logger.info("Saldo de cuenta bancaria ID: {} actualizado a {}.", id, cuenta.getSaldoActual());
+            return cuenta;
         } catch (Exception e) {
             logger.error("Error al actualizar cuenta bancaria ID: {}. Causa: {}", id, e.getMessage(), e);
             throw e;

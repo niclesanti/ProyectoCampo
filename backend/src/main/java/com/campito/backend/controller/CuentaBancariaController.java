@@ -67,7 +67,7 @@ public class CuentaBancariaController {
     @ApiResponse(responseCode = "200", description = "Transacción realizada correctamente")
     @ApiResponse(responseCode = "400", description = "Error al realizar la transacción")
     @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    @PutMapping("/transaccion")
+    @PutMapping("/transaccion/{idCuentaOrigen}/{idCuentaDestino}/{monto}")
     public ResponseEntity<Void> realizarTransaccion(@PathVariable Long idCuentaOrigen, @PathVariable Long idCuentaDestino, @PathVariable Float monto) {
         cuentaBancariaService.transaccionEntreCuentas(idCuentaOrigen, idCuentaDestino, monto);
         return new ResponseEntity<>(HttpStatus.OK);

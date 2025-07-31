@@ -78,7 +78,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoIdEspacioTrabajoNulo_entoncesLanzaExcepcion() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", null, 1L, null);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", null, 1L, null, null);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             transaccionService.registrarTransaccion(dto);
         });
@@ -88,7 +88,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoIdMotivoNulo_entoncesLanzaExcepcion() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, null, null);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, null, null, null);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             transaccionService.registrarTransaccion(dto);
         });
@@ -98,7 +98,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoEspacioTrabajoNoExiste_entoncesLanzaExcepcion() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 99L, 1L, null);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 99L, 1L, null, null);
         when(espacioRepository.findById(99L)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -110,7 +110,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoMotivoNoExiste_entoncesLanzaExcepcion() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 99L, null);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 99L, null, null);
         when(espacioRepository.findById(1L)).thenReturn(Optional.of(espacioTrabajo));
         when(motivoRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -123,7 +123,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoIdContactoExistePeroContactoNoExiste_entoncesLanzaExcepcion() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 1L, 99L);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 1L, 99L, null);
         when(espacioRepository.findById(1L)).thenReturn(Optional.of(espacioTrabajo));
         when(motivoRepository.findById(1L)).thenReturn(Optional.of(motivoTransaccion));
         when(contactoRepository.findById(99L)).thenReturn(Optional.empty());
@@ -137,7 +137,7 @@ public class TransaccionServiceTest {
 
     @Test
     void registrarTransaccion_cuandoOpcionCorrecta_entoncesRegistroExitoso() {
-        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 1L, 1L);
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 1L, 1L, null);
         when(espacioRepository.findById(1L)).thenReturn(Optional.of(espacioTrabajo));
         when(motivoRepository.findById(1L)).thenReturn(Optional.of(motivoTransaccion));
         when(contactoRepository.findById(1L)).thenReturn(Optional.of(contactoTransferencia));
