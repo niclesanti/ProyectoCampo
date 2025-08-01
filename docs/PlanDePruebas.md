@@ -26,6 +26,11 @@ Test unitarios para los componentes encargados de la persistencia de datos.
 - (test) Buscar usuario por email y proveedor y que exista
 - (test) Buscar usuario por email y proveedor y que no exista
 
+### CuentaBancariaRepositoryTest
+
+- (test) buscar cuentas bancarias por espacio de trabajo y que exista alguno
+- (test) buscar cuentas bancarias por espacio de trabajo y que no exista ninguno
+
 ## Service
 
 Test unitarios para los componentes encargados de la lógica de negocio.
@@ -54,11 +59,14 @@ Test unitarios para los componentes encargados de la lógica de negocio.
   - (test) motivo no existe -> registro no eixtoso
   - (test) se proporciona un id de contacto pero este no existe -> registro no exitoso
   - (test) opcion correcta -> registro exitoso
+  - (test) opcion correcta con cuenta bancaria != null -> registro exitoso
 
 - public void removerTransaccion(Long id)
   - (test) id == null -> no es posible remover transaccion
   - (test) transaccion no existe -> no es posible remover transaccion
   - (test) opcion correcta -> se remueve la transaccion y se actualiza el espacio de trabajo
+  - (test) opcion correcta con cuenta bancaria != null y tipo == Gasto -> se remueve la transaccion y se actualiza el espacio de trabajo
+  - (test) opcion correcta con cuenta bancaria != null y tipo == Ingreso -> se remueve la transaccion y se actualiza el espacio de trabajo
 
 - public List<TransaccionListadoDTO> buscarTransaccion(TransaccionBusquedaDTO datosBusqueda)
   - (test) datosBusqueda == null -> busqueda no exitosa
@@ -99,6 +107,34 @@ Test unitarios para los componentes encargados de la lógica de negocio.
   - (test) idEspacioTrabajo == null -> no es posible buscar transacciones recientes
   - (test) no existen transacciones recientes para ese espacio de trabajo -> es posible buscar transacciones recientes
   - (test) opcion correcta (se obtienen las ultimas 6 transacciones) -> es posible buscar transacciones recientes
+
+### CuentaBancariaServiceTest
+
+- public void crearCuentaBancaria(CuentaBancariaDTO cuentaBancariaDTO)
+  - (test) cuentaBancariaDTO == null -> registro no exitoso
+  - (test) cuentaBancariaDTO.idEspacioTrabajo() == null -> registro no exitoso
+  - (test) cuentaBancariaDTO.nombre() == null || cuentaBancariaDTO.nombre().isEmpty() -> registro no exitoso
+  - (test) cuentaBancariaDTO.entidadFinanciera() == null || cuentaBancariaDTO.entidadFinanciera().isEmpty() -> registro no exitoso
+  - (test) pero el id del espacio de trabajo no existe -> registro no exitoso
+  - (test) existe usuario con ese id -> registro exitoso
+
+- public CuentaBancaria actualizarCuentaBancaria(Long id, TipoTransaccion tipo, Float monto)
+  - (test) id == null || monto == null -> no es posible actualizar cuenta bancaria
+  - (test) cuenta bancaria no existe -> no es posible actualizar cuenta bancaria
+  - (test) cuenta.getSaldoActual() < monto -> no es posible actualizar cuenta bancaria
+  - (test) opcion correcta -> se actualiza la cuenta bancaria
+
+- public List<CuentaBancariaListadoDTO> listarCuentasBancarias(Long idEspacioTrabajo)
+  - (test) idEspacioTrabajo == null -> no es posible listar cuentas bancarias
+  - (test) no existen cuentas bancarias para ese espacio de trabajo -> es posible listar
+  - (test) existen cuentas bancarias para ese espacio de trabajo -> es posible listar
+
+- public void transaccionEntreCuentas(Long idCuentaOrigen, Long idCuentaDestino, Float monto)
+  - (test) idCuentaOrigen == null || idCuentaDestino == null || monto == null -> no es posible realizar la transaccion
+  - (test) cuenta origen no existe -> no es posible realizar la transaccion
+  - (test) cuenta destino no existe -> no es posible realizar la transaccion
+  - (test) cuentaOrigen.getSaldoActual() < monto -> no es posible realizar la transaccion
+  - (test) opcion correcta -> se realiza la transaccion
 
 ## Controller
 
@@ -163,3 +199,20 @@ Test unitarios que prueban las APIs del sistema.
   - (test) status 500 -> no es posible buscar transacciones recientes
   - (test) status 404 -> no es posible buscar transacciones recientes
   - (test) status 200 -> es posible buscar transacciones recientes
+
+### CuentaBancariaController
+
+- public ResponseEntity<Void> crearCuentaBancaria(@Valid @RequestBody CuentaBancariaDTO cuentaBancariaDTO)
+  - (test) status 500 -> no es posible crear cuenta bancaria
+  - (test) status 400 -> no es posible crear cuenta bancaria
+  - (test) status 201 -> se crea la cuenta bancaria
+
+- public ResponseEntity<List<CuentaBancariaListadoDTO>> listarCuentasBancarias(@PathVariable Long idEspacioTrabajo)
+  - (test) status 500 -> no es posible listar cuentas bancarias
+  - (test) status 400 -> no es posible listar cuentas bancarias
+  - (test) status 200 -> es posible listar cuentas bancarias
+
+- public ResponseEntity<Void> realizarTransaccion(@PathVariable Long idCuentaOrigen, @PathVariable Long idCuentaDestino, @PathVariable Float monto)
+  - (test) status 500 -> no es posible realizar la transaccion
+  - (test) status 400 -> no es posible realizar la transaccion
+  - (test) status 200 -> se realiza la transaccion

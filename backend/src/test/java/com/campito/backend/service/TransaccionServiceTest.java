@@ -38,7 +38,12 @@ public class TransaccionServiceTest {
     @Mock
     private ContactoTransferenciaRepository contactoRepository;
     @Mock
+    private CuentaBancariaRepository cuentaBancariaRepository;
+    @Mock
     private DashboardRepository dashboardRepository;
+
+    @Mock
+    private CuentaBancariaService cuentaBancariaService;
 
     @InjectMocks
     private TransaccionServiceImpl transaccionService;
@@ -157,6 +162,39 @@ public class TransaccionServiceTest {
         assertEquals(1100.0f, espacioTrabajo.getSaldo()); // 1000 inicial + 100 de ingreso
     }
 
+    @Test
+    void registrarTransaccion_cuandoCuentaBancariaNoNula_entoncesRegistroExitoso() {
+        // Arrange
+        CuentaBancaria cuentaBancaria = new CuentaBancaria();
+        cuentaBancaria.setId(1L);
+        cuentaBancaria.setSaldoActual(500.0f);
+
+        TransaccionDTO dto = new TransaccionDTO(null, LocalDate.now(), 100f, TipoTransaccion.INGRESO, "Desc", "Auditor", 1L, 1L, 1L, 1L);
+
+        when(espacioRepository.findById(1L)).thenReturn(Optional.of(espacioTrabajo));
+        when(motivoRepository.findById(1L)).thenReturn(Optional.of(motivoTransaccion));
+        when(contactoRepository.findById(1L)).thenReturn(Optional.of(contactoTransferencia));
+        when(cuentaBancariaService.actualizarCuentaBancaria(anyLong(), any(TipoTransaccion.class), anyFloat())).thenReturn(cuentaBancaria);
+        when(transaccionRepository.save(any(Transaccion.class))).thenAnswer(invocation -> {
+            Transaccion trans = invocation.getArgument(0);
+            trans.setId(1L);
+            return trans;
+        });
+        when(espacioRepository.save(any(EspacioTrabajo.class))).thenReturn(espacioTrabajo);
+
+        // Act
+        TransaccionDTO result = transaccionService.registrarTransaccion(dto);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1L, result.id());
+        assertEquals(1L, result.idCuentaBancaria());
+        verify(transaccionRepository, times(1)).save(any(Transaccion.class));
+        verify(espacioRepository, times(1)).save(any(EspacioTrabajo.class));
+        verify(cuentaBancariaService, times(1)).actualizarCuentaBancaria(1L, TipoTransaccion.INGRESO, 100f);
+        assertEquals(1100.0f, espacioTrabajo.getSaldo());
+    }
+
     // Tests para removerTransaccion
 
     @Test
@@ -195,6 +233,64 @@ public class TransaccionServiceTest {
         verify(transaccionRepository, times(1)).delete(transaccion);
         verify(espacioRepository, times(1)).save(espacioTrabajo);
         assertEquals(1000.0f, espacioTrabajo.getSaldo()); // 950 + 50 de reversión
+    }
+
+    @Test
+    void removerTransaccion_cuandoCuentaBancariaNoNulaYTipoGasto_entoncesRemueveTransaccionYActualizaEspacio() {
+        // Arrange
+        CuentaBancaria cuentaBancaria = new CuentaBancaria();
+        cuentaBancaria.setId(1L);
+        cuentaBancaria.setSaldoActual(400.0f);
+
+        Transaccion transaccion = new Transaccion(TipoTransaccion.GASTO, 100.0f, LocalDate.now(), "Gasto Test", "Auditor", LocalDateTime.now(), espacioTrabajo, motivoTransaccion, null);
+        transaccion.setId(1L);
+        transaccion.setCuentaBancaria(cuentaBancaria);
+        espacioTrabajo.setSaldo(900.0f); // Saldo después del gasto
+
+        when(transaccionRepository.findById(1L)).thenReturn(Optional.of(transaccion));
+        doNothing().when(transaccionRepository).delete(any(Transaccion.class));
+        when(espacioRepository.save(any(EspacioTrabajo.class))).thenReturn(espacioTrabajo);
+        when(cuentaBancariaRepository.save(any(CuentaBancaria.class))).thenReturn(cuentaBancaria);
+
+        // Act
+        transaccionService.removerTransaccion(1L);
+
+        // Assert
+        verify(transaccionRepository, times(1)).findById(1L);
+        verify(transaccionRepository, times(1)).delete(transaccion);
+        verify(espacioRepository, times(1)).save(espacioTrabajo);
+        verify(cuentaBancariaRepository, times(1)).save(cuentaBancaria);
+        assertEquals(1000.0f, espacioTrabajo.getSaldo()); // 900 + 100 de reversión
+        assertEquals(500.0f, cuentaBancaria.getSaldoActual()); // 400 + 100 de reversión
+    }
+
+    @Test
+    void removerTransaccion_cuandoCuentaBancariaNoNulaYTipoIngreso_entoncesRemueveTransaccionYActualizaEspacio() {
+        // Arrange
+        CuentaBancaria cuentaBancaria = new CuentaBancaria();
+        cuentaBancaria.setId(1L);
+        cuentaBancaria.setSaldoActual(600.0f);
+
+        Transaccion transaccion = new Transaccion(TipoTransaccion.INGRESO, 100.0f, LocalDate.now(), "Ingreso Test", "Auditor", LocalDateTime.now(), espacioTrabajo, motivoTransaccion, null);
+        transaccion.setId(1L);
+        transaccion.setCuentaBancaria(cuentaBancaria);
+        espacioTrabajo.setSaldo(1100.0f); // Saldo después del ingreso
+
+        when(transaccionRepository.findById(1L)).thenReturn(Optional.of(transaccion));
+        doNothing().when(transaccionRepository).delete(any(Transaccion.class));
+        when(espacioRepository.save(any(EspacioTrabajo.class))).thenReturn(espacioTrabajo);
+        when(cuentaBancariaRepository.save(any(CuentaBancaria.class))).thenReturn(cuentaBancaria);
+
+        // Act
+        transaccionService.removerTransaccion(1L);
+
+        // Assert
+        verify(transaccionRepository, times(1)).findById(1L);
+        verify(transaccionRepository, times(1)).delete(transaccion);
+        verify(espacioRepository, times(1)).save(espacioTrabajo);
+        verify(cuentaBancariaRepository, times(1)).save(cuentaBancaria);
+        assertEquals(1000.0f, espacioTrabajo.getSaldo()); // 1100 - 100 de reversión
+        assertEquals(500.0f, cuentaBancaria.getSaldoActual()); // 600 - 100 de reversión
     }
 
     // Tests para buscarTransaccion
