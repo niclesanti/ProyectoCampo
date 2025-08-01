@@ -189,10 +189,37 @@
                                 <i class="fas fa-plus"></i> Nuevo
                             </button>
                         </div>
-                        <div id="newReasonForm" class="form__group--nested" hidden>
-                            <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
-                            <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
-                            <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                        <div id="newReasonForm" class="form__group--nested form__group--nested-vertical" hidden>
+                            <div class="form__group--nested-inputs">
+                                <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
+                            </div>
+                            <div class="form__group--nested-actions">
+                                <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form__group">
+                        <label for="bankAccount" class="form__label">Cuenta bancaria (opcional)</label>
+                        <div class="form__group--horizontal">
+                            <select id="bankAccount" name="bankAccount" class="form__select">
+                                <option value="">Seleccionar cuenta</option>
+                            </select>
+                            <button type="button" id="newBankAccountBtn" class="btn btn--secondary btn--small">
+                                <i class="fas fa-plus"></i> Nuevo
+                            </button>
+                        </div>
+                        <div id="newBankAccountForm" class="form__group--nested form__group--nested-vertical" hidden>
+                            <div class="form__group--nested-inputs">
+                                <input type="text" id="newAccountNameInput" class="form__input" placeholder="Nombre de la cuenta" maxlength="50">
+                                <select id="financialEntitySelect" class="form__select">
+                                    <option value="">Seleccionar entidad</option>
+                                </select>
+                            </div>
+                            <div class="form__group--nested-actions">
+                                <button type="button" id="cancelBankAccountBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                <button type="button" id="saveBankAccountBtn" class="btn btn--primary btn--small">Guardar</button>
+                            </div>
                         </div>
                     </div>
                     <div class="form__group">
@@ -205,10 +232,14 @@
                                 <i class="fas fa-plus"></i> Nuevo
                             </button>
                         </div>
-                        <div id="newContactForm" class="form__group--nested" hidden>
-                            <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
-                            <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
-                            <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                        <div id="newContactForm" class="form__group--nested form__group--nested-vertical" hidden>
+                            <div class="form__group--nested-inputs">
+                                <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
+                            </div>
+                            <div class="form__group--nested-actions">
+                                <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
+                            </div>
                         </div>
                     </div>
                     <div class="form__group">

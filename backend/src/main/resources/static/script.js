@@ -13,6 +13,7 @@
         transactions: [],
         reasons: [],
         contacts: [],
+        bankAccounts: [],
         budgets: [],
         workspaces: [
             { id: 1, name: 'Campo en Guadalupe Norte' },
@@ -45,14 +46,18 @@
         shareForm: document.getElementById('shareForm'),
         newReasonForm: document.getElementById('newReasonForm'),
         newContactForm: document.getElementById('newContactForm'),
+        newBankAccountForm: document.getElementById('newBankAccountForm'),
         reasonSelect: document.getElementById('reason'),
         contactSelect: document.getElementById('recipient'),
+        bankAccountSelect: document.getElementById('bankAccount'),
         searchReasonSelect: document.getElementById('searchReason'),
         searchContactSelect: document.getElementById('searchRecipient'),
         searchYearInput: document.getElementById('searchYear'),
         budgetReasonSelect: document.getElementById('budgetReason'),
         newReasonInput: document.getElementById('newReasonInput'),
         newContactInput: document.getElementById('newContactInput'),
+        newAccountNameInput: document.getElementById('newAccountNameInput'),
+        financialEntitySelect: document.getElementById('financialEntitySelect'),
         orderBySelect: document.getElementById('orderBy'),
         recentTransactionsList: document.getElementById('recentTransactionsList'),
         searchResultsContainer: document.getElementById('searchResults'),
@@ -71,6 +76,7 @@
         updateDashboard();
         DOMElements.searchYearInput.value = new Date().getFullYear();
         loadAuthenticatedUser();
+        populateFinancialEntities();
     }
 
     function loadAuthenticatedUser() {
@@ -171,6 +177,7 @@
                     }
                     cargarMotivos(idEspacioTrabajo);
                     cargarContactos(idEspacioTrabajo);
+                    cargarCuentasBancarias(idEspacioTrabajo);
                     cargarTransaccionesRecientes(idEspacioTrabajo);
                     actualizarDashboard(idEspacioTrabajo); // <-- AÑADIDO
                 } else {
@@ -178,6 +185,7 @@
                     updateBalance();
                     clearMotivos();
                     clearContactos();
+                    clearCuentasBancarias();
                     appState.transactions = [];
                     renderRecentTransactions();
                     // Limpiar gráficos si no hay espacio seleccionado
@@ -220,6 +228,9 @@
         document.getElementById('newContactBtn').addEventListener('click', () => toggleNestedForm('newContactForm', true));
         document.getElementById('cancelContactBtn').addEventListener('click', () => toggleNestedForm('newContactForm', false));
         document.getElementById('saveContactBtn').addEventListener('click', handleNewContact);
+        document.getElementById('newBankAccountBtn').addEventListener('click', () => toggleNestedForm('newBankAccountForm', true));
+        document.getElementById('cancelBankAccountBtn').addEventListener('click', () => toggleNestedForm('newBankAccountForm', false));
+        document.getElementById('saveBankAccountBtn').addEventListener('click', handleNewBankAccount);
         document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
         document.getElementById('viewAllTransactionsBtn').addEventListener('click', showAllTransactions);
         DOMElements.orderBySelect.addEventListener('change', handleSearchOrderChange);
@@ -423,6 +434,7 @@
         const amount = parseFloat(formData.get('amount'));
         const idMotivo = formData.get('reason'); // idMotivo
         const idContacto = formData.get('recipient'); // idContacto (opcional)
+        const idCuentaBancaria = formData.get('bankAccount'); // idCuentaBancaria (opcional)
         const description = formData.get('description');
 
         const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
@@ -446,7 +458,8 @@
             nombreCompletoAuditoria: nombreCompletoAuditoria,
             idEspacioTrabajo: idEspacioTrabajo,
             idMotivo: idMotivo,
-            idContacto: idContacto || null // Si es vacío, enviar null
+            idContacto: idContacto || null, // Si es vacío, enviar null
+            idCuentaBancaria: idCuentaBancaria || null // Si es vacío, enviar null
         };
 
         fetch('/transaccion/registrar', {
@@ -874,6 +887,118 @@
         option.textContent = contact.nombre;
         DOMElements.contactSelect.appendChild(option.cloneNode(true));
         DOMElements.searchContactSelect.appendChild(option.cloneNode(true));
+    }
+
+    function cargarCuentasBancarias(idEspacioTrabajo) {
+        fetch(`/cuentabancaria/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar las cuentas bancarias.');
+                }
+                return response.json();
+            })
+            .then(cuentas => {
+                appState.bankAccounts = cuentas;
+                populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+            })
+            .catch(error => {
+                console.error('Error al cargar cuentas bancarias:', error);
+                showNotification('Error al cargar las cuentas bancarias', 'error');
+            });
+    }
+
+    function clearCuentasBancarias() {
+        appState.bankAccounts = [];
+        populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+    }
+
+    function populateCuentaBancariaSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.bankAccounts.forEach(cuenta => {
+            const opt = document.createElement('option');
+            opt.value = cuenta.id;
+            opt.textContent = cuenta.nombre;
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function addBankAccountToSelector(cuenta) {
+        appState.bankAccounts.push(cuenta);
+        const option = document.createElement('option');
+        option.value = cuenta.id;
+        option.textContent = cuenta.nombre;
+        DOMElements.bankAccountSelect.appendChild(option.cloneNode(true));
+    }
+
+    function populateFinancialEntities() {
+        const select = DOMElements.financialEntitySelect;
+        const entidades = [
+            'Banco Credicoop',
+            'Banco de Santa Fe',
+            'Banco Macro',
+            'Banco Patagonia',
+            'Banco Santander',
+            'BBVA',
+            'BNA',
+            'Brubank',
+            'Galicia',
+            'HSBC',
+            'ICBC',
+            'Lemon Cash',
+            'Mercado Pago',
+            'Naranja X',
+            'Personal Pay',
+            'Ualá'
+        ];
+
+        entidades.forEach(entidad => {
+            const option = document.createElement('option');
+            option.value = entidad;
+            option.textContent = entidad;
+            select.appendChild(option);
+        });
+    }
+
+    function handleNewBankAccount() {
+        const accountName = DOMElements.newAccountNameInput.value.trim();
+        const entity = DOMElements.financialEntitySelect.value;
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (accountName && entity) {
+            const cuentaData = {
+                nombre: accountName,
+                entidadFinanciera: entity,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/cuentabancaria/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cuentaData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    toggleNestedForm('newBankAccountForm', false);
+                    showNotification('Cuenta bancaria guardada con éxito', 'success');
+                    cargarCuentasBancarias(idEspacioTrabajo); // Recargar la lista
+                } else {
+                    throw new Error('Error al registrar la cuenta bancaria.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar la cuenta bancaria', 'error');
+            });
+        } else {
+            showNotification('Por favor, ingrese un nombre y seleccione una entidad', 'error');
+        }
     }
 
     function handleNewReason() {

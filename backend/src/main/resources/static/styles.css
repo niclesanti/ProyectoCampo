@@ -278,6 +278,25 @@ body {
     border-radius: var(--border-radius-md);
 }
 
+.form__group--nested-vertical {
+    flex-direction: column;
+}
+
+.form__group--nested-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.form__group--nested-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
 .form__group--grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
