@@ -137,9 +137,20 @@
             </div>
         </section>
 
-        <!-- Transacciones Recientes -->
-        <section class="transactions-section" aria-labelledby="transactions-title">
-            <div class="card">
+        <!-- Listados -->
+        <section class="lists-section" aria-label="Listado de Cuentas y Transacciones">
+            <!-- Cuentas Bancarias -->
+            <div class="card card--accounts">
+                <div class="card__header">
+                    <h3 class="card__title">Cuentas bancarias</h3>
+                </div>
+                <div id="lista-cuentas-bancarias" class="accounts-list">
+                    <!-- Las cuentas se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Transacciones Recientes -->
+            <div class="card card--transactions-list">
                 <div class="card__header">
                     <h3 id="transactions-title" class="card__title">Transacciones recientes</h3>
                     <button id="viewAllTransactionsBtn" class="btn btn--text">

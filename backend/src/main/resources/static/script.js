@@ -60,6 +60,7 @@
         financialEntitySelect: document.getElementById('financialEntitySelect'),
         orderBySelect: document.getElementById('orderBy'),
         recentTransactionsList: document.getElementById('recentTransactionsList'),
+        bankAccountsList: document.getElementById('lista-cuentas-bancarias'),
         searchResultsContainer: document.getElementById('searchResults'),
         alertsListContainer: document.getElementById('alertsList'),
         notificationContainer: document.getElementById('notification-container'),
@@ -263,6 +264,25 @@
         const container = DOMElements.recentTransactionsList;
         const recent = appState.transactions.slice(0, 6);
         renderTransactionList(container, recent);
+    }
+
+    function renderBankAccounts() {
+        const container = DOMElements.bankAccountsList;
+        container.innerHTML = '';
+        if (appState.bankAccounts.length === 0) {
+            container.innerHTML = '<p class="transactions-list__empty">No hay cuentas bancarias.</p>';
+            return;
+        }
+        appState.bankAccounts.forEach(account => {
+            const item = document.createElement('div');
+            item.className = 'account-item';
+            item.innerHTML = `
+                <span class="account-item__name">${account.nombre}</span>
+                <span class="account-item__meta">${account.entidadFinanciera}</span>
+                <span class="account-item__balance">$ ${account.saldoActual.toLocaleString('es-AR')}</span>
+            `;
+            container.appendChild(item);
+        });
     }
 
     function renderTransactionList(container, transactions) {
@@ -900,6 +920,7 @@
             .then(cuentas => {
                 appState.bankAccounts = cuentas;
                 populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+                renderBankAccounts(); // Renderiza la lista de cuentas
             })
             .catch(error => {
                 console.error('Error al cargar cuentas bancarias:', error);
@@ -910,6 +931,7 @@
     function clearCuentasBancarias() {
         appState.bankAccounts = [];
         populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+        renderBankAccounts(); // Limpia y renderiza la lista de cuentas vacía
     }
 
     function populateCuentaBancariaSelector(selectElement, placeholder) {

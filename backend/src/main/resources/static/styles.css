@@ -727,12 +727,53 @@ body {
 }
 
 /* Transacciones (.transactions-section) */
-.transactions-section .card {
+.lists-section {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.25rem;
+}
+
+.card--accounts,
+.card--transactions-list {
     padding: 0;
 }
 
-.transactions-section .card__header {
+.card--accounts .card__header,
+.card--transactions-list .card__header {
     padding: 1.25rem;
+}
+
+.accounts-list {
+    padding: 0 1.25rem 1.25rem;
+    max-height: 300px; /* Altura máxima para 6 items aprox */
+    overflow-y: auto;
+}
+
+.account-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.account-item:last-child {
+    border-bottom: none;
+}
+
+.account-item__name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.account-item__meta {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.account-item__balance {
+    font-weight: 700;
+    color: var(--color-primary-blue);
+    margin-top: 0.25rem;
 }
 
 /* 6. Componentes Específicos
@@ -1227,6 +1268,10 @@ body {
 -------------------------------------------------------------------*/
 @media (max-width: 900px) {
     .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .lists-section {
         grid-template-columns: 1fr;
     }
 }
