@@ -44,7 +44,7 @@ public class TransaccionControllerTest {
     @Test
     @WithMockUser(username = "user")
     void registrarTransaccion_cuandoExitoso_entoncesStatus201() throws Exception {
-        TransaccionDTO transaccionDTO = new TransaccionDTO(null, LocalDate.now(), 100.0f, TipoTransaccion.INGRESO, "Test Desc", "User Test", 1L, 1L, null);
+        TransaccionDTO transaccionDTO = new TransaccionDTO(null, LocalDate.now(), 100.0f, TipoTransaccion.INGRESO, "Test Desc", "User Test", 1L, 1L, null, null);
         when(transaccionService.registrarTransaccion(any(TransaccionDTO.class))).thenReturn(transaccionDTO);
 
         mockMvc.perform(post("/transaccion/registrar")
@@ -58,7 +58,7 @@ public class TransaccionControllerTest {
     @Test
     @WithMockUser(username = "user")
     void registrarTransaccion_cuandoDatosInvalidos_entoncesStatus400() throws Exception {
-        TransaccionDTO transaccionDTO = new TransaccionDTO(null, null, null, null, "", "", null, null, null); // Datos inválidos
+        TransaccionDTO transaccionDTO = new TransaccionDTO(null, null, null, null, "", "", null, null, null, null); // Datos inválidos
 
         mockMvc.perform(post("/transaccion/registrar")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +70,7 @@ public class TransaccionControllerTest {
     @Test
     @WithMockUser(username = "user")
     void registrarTransaccion_cuandoErrorInterno_entoncesStatus500() throws Exception {
-        TransaccionDTO transaccionDTO = new TransaccionDTO(null, LocalDate.now(), 100.0f, TipoTransaccion.INGRESO, "Test Desc", "User Test", 1L, 1L, null);
+        TransaccionDTO transaccionDTO = new TransaccionDTO(null, LocalDate.now(), 100.0f, TipoTransaccion.INGRESO, "Test Desc", "User Test", 1L, 1L, null, null);
         doThrow(new RuntimeException("Error inesperado")).when(transaccionService).registrarTransaccion(any(TransaccionDTO.class));
 
         mockMvc.perform(post("/transaccion/registrar")

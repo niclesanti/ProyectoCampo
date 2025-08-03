@@ -32,7 +32,8 @@ public record TransaccionDTO(
     Long idEspacioTrabajo,
     @NotNull(message = "El ID del motivo no puede ser nulo")
     Long idMotivo,
-    Long idContacto
+    Long idContacto,
+    Long idCuentaBancaria
 ) {
     public Transaccion toTransaccion() {
         Transaccion transaccion = new Transaccion();

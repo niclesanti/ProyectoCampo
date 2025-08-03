@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.campito.backend.dao.ContactoTransferenciaRepository;
+import com.campito.backend.dao.CuentaBancariaRepository;
 import com.campito.backend.dao.DashboardRepository;
 import com.campito.backend.dao.EspacioTrabajoRepository;
 import com.campito.backend.dao.MotivoTransaccionRepository;
@@ -30,6 +31,7 @@ import com.campito.backend.dto.TransaccionBusquedaDTO;
 import com.campito.backend.dto.TransaccionDTO;
 import com.campito.backend.dto.TransaccionListadoDTO;
 import com.campito.backend.model.ContactoTransferencia;
+import com.campito.backend.model.CuentaBancaria;
 import com.campito.backend.model.EspacioTrabajo;
 import com.campito.backend.model.MotivoTransaccion;
 import com.campito.backend.model.TipoTransaccion;
@@ -47,6 +49,8 @@ public class TransaccionServiceImpl implements TransaccionService {
     private final MotivoTransaccionRepository motivoRepository;
     private final ContactoTransferenciaRepository contactoRepository;
     private final DashboardRepository dashboardRepository;
+    private final CuentaBancariaRepository cuentaBancariaRepository;
+    private final CuentaBancariaService cuentaBancariaService;
 
     @Autowired
     public TransaccionServiceImpl(
@@ -54,12 +58,16 @@ public class TransaccionServiceImpl implements TransaccionService {
         EspacioTrabajoRepository espacioRepository,
         MotivoTransaccionRepository motivoRepository,
         ContactoTransferenciaRepository contactoRepository,
-        DashboardRepository dashboardRepository) {
+        DashboardRepository dashboardRepository,
+        CuentaBancariaRepository cuentaBancariaRepository,
+        CuentaBancariaService cuentaBancariaService) {
         this.transaccionRepository = transaccionRepository;
         this.espacioRepository = espacioRepository;
         this.motivoRepository = motivoRepository;
         this.contactoRepository = contactoRepository;
         this.dashboardRepository = dashboardRepository;
+        this.cuentaBancariaRepository = cuentaBancariaRepository;
+        this.cuentaBancariaService = cuentaBancariaService;
     }
 
     @Override
@@ -102,6 +110,11 @@ public class TransaccionServiceImpl implements TransaccionService {
                 transaccion.setContacto(contacto);
             }
 
+            if(transaccionDTO.idCuentaBancaria() != null) {
+                CuentaBancaria cuenta = cuentaBancariaService.actualizarCuentaBancaria(transaccionDTO.idCuentaBancaria(), transaccionDTO.tipo(), transaccionDTO.monto());
+                transaccion.setCuentaBancaria(cuenta);
+            }
+
             ZoneId buenosAiresZone = ZoneId.of("America/Argentina/Buenos_Aires");
             ZonedDateTime nowInBuenosAires = ZonedDateTime.now(buenosAiresZone);
             transaccion.setFechaCreacion(nowInBuenosAires.toLocalDateTime());
@@ -128,7 +141,8 @@ public class TransaccionServiceImpl implements TransaccionService {
                 transaccionGuardada.getNombreCompletoAuditoria(),
                 transaccionGuardada.getEspacioTrabajo().getId(),
                 transaccionGuardada.getMotivo().getId(),
-                transaccionGuardada.getContacto() != null ? transaccionGuardada.getContacto().getId() : null
+                transaccionGuardada.getContacto() != null ? transaccionGuardada.getContacto().getId() : null,
+                transaccionGuardada.getCuentaBancaria() != null ? transaccionGuardada.getCuentaBancaria().getId() : null
             );
         } catch (Exception e) {
             logger.error("Error inesperado al registrar transaccion en espacio ID {}: {}", transaccionDTO.idEspacioTrabajo(), e.getMessage(), e);
@@ -157,6 +171,18 @@ public class TransaccionServiceImpl implements TransaccionService {
                 espacio.setSaldo(espacio.getSaldo() - transaccion.getMonto());
             } else {
                 espacio.setSaldo(espacio.getSaldo() + transaccion.getMonto());
+            }
+
+            if(transaccion.getCuentaBancaria() != null) {
+                CuentaBancaria cuenta = transaccion.getCuentaBancaria();
+
+                if (transaccion.getTipo() == TipoTransaccion.GASTO) {
+                    cuenta.setSaldoActual(cuenta.getSaldoActual() + transaccion.getMonto());
+                } else {
+                    cuenta.setSaldoActual(cuenta.getSaldoActual() - transaccion.getMonto());
+                }
+                cuentaBancariaRepository.save(cuenta);
+                logger.info("Saldo de cuenta bancaria ID {} actualizado a {} tras remocion de transaccion ID {}", cuenta.getId(), cuenta.getSaldoActual(), id);
             }
 
             transaccionRepository.delete(transaccion);

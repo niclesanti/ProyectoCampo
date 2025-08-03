@@ -13,6 +13,7 @@
         transactions: [],
         reasons: [],
         contacts: [],
+        bankAccounts: [],
         budgets: [],
         workspaces: [
             { id: 1, name: 'Campo en Guadalupe Norte' },
@@ -43,18 +44,24 @@
         budgetForm: document.getElementById('budgetForm'),
         workspaceForm: document.getElementById('workspaceForm'),
         shareForm: document.getElementById('shareForm'),
+        transferForm: document.getElementById('transferForm'),
         newReasonForm: document.getElementById('newReasonForm'),
         newContactForm: document.getElementById('newContactForm'),
+        newBankAccountForm: document.getElementById('newBankAccountForm'),
         reasonSelect: document.getElementById('reason'),
         contactSelect: document.getElementById('recipient'),
+        bankAccountSelect: document.getElementById('bankAccount'),
         searchReasonSelect: document.getElementById('searchReason'),
         searchContactSelect: document.getElementById('searchRecipient'),
         searchYearInput: document.getElementById('searchYear'),
         budgetReasonSelect: document.getElementById('budgetReason'),
         newReasonInput: document.getElementById('newReasonInput'),
         newContactInput: document.getElementById('newContactInput'),
+        newAccountNameInput: document.getElementById('newAccountNameInput'),
+        financialEntitySelect: document.getElementById('financialEntitySelect'),
         orderBySelect: document.getElementById('orderBy'),
         recentTransactionsList: document.getElementById('recentTransactionsList'),
+        bankAccountsList: document.getElementById('lista-cuentas-bancarias'),
         searchResultsContainer: document.getElementById('searchResults'),
         alertsListContainer: document.getElementById('alertsList'),
         notificationContainer: document.getElementById('notification-container'),
@@ -71,6 +78,7 @@
         updateDashboard();
         DOMElements.searchYearInput.value = new Date().getFullYear();
         loadAuthenticatedUser();
+        populateFinancialEntities();
     }
 
     function loadAuthenticatedUser() {
@@ -171,6 +179,7 @@
                     }
                     cargarMotivos(idEspacioTrabajo);
                     cargarContactos(idEspacioTrabajo);
+                    cargarCuentasBancarias(idEspacioTrabajo);
                     cargarTransaccionesRecientes(idEspacioTrabajo);
                     actualizarDashboard(idEspacioTrabajo); // <-- AÑADIDO
                 } else {
@@ -178,6 +187,7 @@
                     updateBalance();
                     clearMotivos();
                     clearContactos();
+                    clearCuentasBancarias();
                     appState.transactions = [];
                     renderRecentTransactions();
                     // Limpiar gráficos si no hay espacio seleccionado
@@ -200,6 +210,7 @@
         document.getElementById('closeWorkspaceModalBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('closeShareModalBtn').addEventListener('click', () => toggleModal('shareModal', false));
         document.getElementById('cancelTransactionBtn').addEventListener('click', () => toggleModal('transactionModal', false));
+        document.getElementById('cancelTransferBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('cancelBudgetBtn').addEventListener('click', () => toggleModal('budgetModal', false));
         document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('shareModal', false));
@@ -214,12 +225,32 @@
         DOMElements.budgetForm.addEventListener('submit', handleBudgetSubmit);
         DOMElements.workspaceForm.addEventListener('submit', handleWorkspaceSubmit);
         DOMElements.shareForm.addEventListener('submit', handleShareSubmit);
+        DOMElements.transferForm.addEventListener('submit', handleTransferSubmit);
+
+        // Listeners para las pestañas del modal de transacciones
+        const tabButtons = document.querySelectorAll('.tabs__button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                // Remover clase activa de todos los botones y contenidos
+                tabButtons.forEach(btn => btn.classList.remove('tabs__button--active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('tab-content--active'));
+
+                // Añadir clase activa al botón y contenido seleccionados
+                button.classList.add('tabs__button--active');
+                document.getElementById(`tab-${tab}`).classList.add('tab-content--active');
+            });
+        });
+
         document.getElementById('newReasonBtn').addEventListener('click', () => toggleNestedForm('newReasonForm', true));
         document.getElementById('cancelReasonBtn').addEventListener('click', () => toggleNestedForm('newReasonForm', false));
         document.getElementById('saveReasonBtn').addEventListener('click', handleNewReason);
         document.getElementById('newContactBtn').addEventListener('click', () => toggleNestedForm('newContactForm', true));
         document.getElementById('cancelContactBtn').addEventListener('click', () => toggleNestedForm('newContactForm', false));
         document.getElementById('saveContactBtn').addEventListener('click', handleNewContact);
+        document.getElementById('newBankAccountBtn').addEventListener('click', () => toggleNestedForm('newBankAccountForm', true));
+        document.getElementById('cancelBankAccountBtn').addEventListener('click', () => toggleNestedForm('newBankAccountForm', false));
+        document.getElementById('saveBankAccountBtn').addEventListener('click', handleNewBankAccount);
         document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
         document.getElementById('viewAllTransactionsBtn').addEventListener('click', showAllTransactions);
         DOMElements.orderBySelect.addEventListener('change', handleSearchOrderChange);
@@ -252,6 +283,27 @@
         const container = DOMElements.recentTransactionsList;
         const recent = appState.transactions.slice(0, 6);
         renderTransactionList(container, recent);
+    }
+
+    function renderBankAccounts() {
+        const container = DOMElements.bankAccountsList;
+        container.innerHTML = '';
+        if (appState.bankAccounts.length === 0) {
+            container.innerHTML = '<p class="transactions-list__empty">No hay cuentas bancarias.</p>';
+            return;
+        }
+        // Crear una copia invertida del array para no modificar el estado original
+        const reversedAccounts = [...appState.bankAccounts].reverse();
+        reversedAccounts.forEach(account => {
+            const item = document.createElement('div');
+            item.className = 'account-item';
+            item.innerHTML = `
+                <span class="account-item__name">${account.nombre}</span>
+                <span class="account-item__meta">${account.entidadFinanciera}</span>
+                <span class="account-item__balance">$ ${account.saldoActual.toLocaleString('es-AR')}</span>
+            `;
+            container.appendChild(item);
+        });
     }
 
     function renderTransactionList(container, transactions) {
@@ -423,6 +475,7 @@
         const amount = parseFloat(formData.get('amount'));
         const idMotivo = formData.get('reason'); // idMotivo
         const idContacto = formData.get('recipient'); // idContacto (opcional)
+        const idCuentaBancaria = formData.get('bankAccount'); // idCuentaBancaria (opcional)
         const description = formData.get('description');
 
         const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
@@ -446,7 +499,8 @@
             nombreCompletoAuditoria: nombreCompletoAuditoria,
             idEspacioTrabajo: idEspacioTrabajo,
             idMotivo: idMotivo,
-            idContacto: idContacto || null // Si es vacío, enviar null
+            idContacto: idContacto || null, // Si es vacío, enviar null
+            idCuentaBancaria: idCuentaBancaria || null // Si es vacío, enviar null
         };
 
         fetch('/transaccion/registrar', {
@@ -503,8 +557,9 @@
             // Invalidar la caché para este espacio de trabajo
             delete appState.dashboardCache[currentWorkspaceId];
 
-            // Actualizar el dashboard con los nuevos datos
+            // Actualizar el dashboard y las cuentas bancarias
             actualizarDashboard(currentWorkspaceId);
+            cargarCuentasBancarias(currentWorkspaceId);
 
             toggleModal('transactionModal', false);
             showNotification('Transacción guardada con éxito', 'success');
@@ -512,6 +567,46 @@
         .catch(error => {
             console.error('Error:', error);
             showNotification('Error al guardar la transacción', 'error');
+        });
+    }
+
+    function handleTransferSubmit(event) {
+        event.preventDefault();
+        const idCuentaOrigen = document.getElementById('transferSourceAccount').value;
+        const idCuentaDestino = document.getElementById('transferDestinationAccount').value;
+        const monto = parseFloat(document.getElementById('transferAmount').value);
+
+        if (!idCuentaOrigen || !idCuentaDestino || isNaN(monto) || monto <= 0) {
+            showNotification('Por favor, complete todos los campos.', 'error');
+            return;
+        }
+
+        if (idCuentaOrigen === idCuentaDestino) {
+            showNotification('La cuenta de origen y destino no pueden ser la misma.', 'error');
+            return;
+        }
+
+        fetch(`/cuentabancaria/transaccion/${idCuentaOrigen}/${idCuentaDestino}/${monto}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                toggleModal('transactionModal', false);
+                showNotification('Transferencia realizada con éxito', 'success');
+                const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+                cargarCuentasBancarias(idEspacioTrabajo);
+                cargarTransaccionesRecientes(idEspacioTrabajo);
+                actualizarDashboard(idEspacioTrabajo);
+            } else {
+                throw new Error('Error al realizar la transferencia.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
         });
     }
 
@@ -874,6 +969,135 @@
         option.textContent = contact.nombre;
         DOMElements.contactSelect.appendChild(option.cloneNode(true));
         DOMElements.searchContactSelect.appendChild(option.cloneNode(true));
+    }
+
+    function cargarCuentasBancarias(idEspacioTrabajo) {
+        fetch(`/cuentabancaria/listar/${idEspacioTrabajo}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar las cuentas bancarias.');
+                }
+                return response.json();
+            })
+            .then(cuentas => {
+                appState.bankAccounts = cuentas;
+                populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+                renderBankAccounts(); // Renderiza la lista de cuentas
+            })
+            .catch(error => {
+                console.error('Error al cargar cuentas bancarias:', error);
+                showNotification('Error al cargar las cuentas bancarias', 'error');
+            });
+    }
+
+    function clearCuentasBancarias() {
+        appState.bankAccounts = [];
+        populateCuentaBancariaSelector(DOMElements.bankAccountSelect, 'Seleccionar cuenta');
+        renderBankAccounts(); // Limpia y renderiza la lista de cuentas vacía
+    }
+
+    function populateCuentaBancariaSelector(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        appState.bankAccounts.forEach(cuenta => {
+            const opt = document.createElement('option');
+            opt.value = cuenta.id;
+            opt.textContent = cuenta.nombre;
+            selectElement.appendChild(opt);
+        });
+
+        // Poblar también los selects del formulario de transferencia
+        const transferSourceSelect = document.getElementById('transferSourceAccount');
+        const transferDestinationSelect = document.getElementById('transferDestinationAccount');
+        if (transferSourceSelect && transferDestinationSelect) {
+            transferSourceSelect.innerHTML = `<option value="">Seleccionar cuenta de origen</option>`;
+            transferDestinationSelect.innerHTML = `<option value="">Seleccionar cuenta de destino</option>`;
+            appState.bankAccounts.forEach(cuenta => {
+                const opt = document.createElement('option');
+                opt.value = cuenta.id;
+                opt.textContent = cuenta.nombre;
+                transferSourceSelect.appendChild(opt.cloneNode(true));
+                transferDestinationSelect.appendChild(opt.cloneNode(true));
+            });
+        }
+    }
+
+    function addBankAccountToSelector(cuenta) {
+        appState.bankAccounts.push(cuenta);
+        const option = document.createElement('option');
+        option.value = cuenta.id;
+        option.textContent = cuenta.nombre;
+        DOMElements.bankAccountSelect.appendChild(option.cloneNode(true));
+    }
+
+    function populateFinancialEntities() {
+        const select = DOMElements.financialEntitySelect;
+        const entidades = [
+            'Banco Credicoop',
+            'Banco de Santa Fe',
+            'Banco Macro',
+            'Banco Patagonia',
+            'Banco Santander',
+            'BBVA',
+            'BNA',
+            'Brubank',
+            'Galicia',
+            'HSBC',
+            'ICBC',
+            'Lemon Cash',
+            'Mercado Pago',
+            'Naranja X',
+            'Personal Pay',
+            'Ualá'
+        ];
+
+        entidades.forEach(entidad => {
+            const option = document.createElement('option');
+            option.value = entidad;
+            option.textContent = entidad;
+            select.appendChild(option);
+        });
+    }
+
+    function handleNewBankAccount() {
+        const accountName = DOMElements.newAccountNameInput.value.trim();
+        const entity = DOMElements.financialEntitySelect.value;
+        const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+
+        if (!idEspacioTrabajo) {
+            showNotification('Por favor, seleccione un espacio de trabajo primero', 'error');
+            return;
+        }
+
+        if (accountName && entity) {
+            const cuentaData = {
+                nombre: accountName,
+                entidadFinanciera: entity,
+                idEspacioTrabajo: idEspacioTrabajo
+            };
+
+            fetch('/cuentabancaria/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cuentaData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    toggleNestedForm('newBankAccountForm', false);
+                    showNotification('Cuenta bancaria guardada con éxito', 'success');
+                    cargarCuentasBancarias(idEspacioTrabajo); // Recargar la lista
+                } else {
+                    throw new Error('Error al registrar la cuenta bancaria.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error al guardar la cuenta bancaria', 'error');
+            });
+        } else {
+            showNotification('Por favor, ingrese un nombre y seleccione una entidad', 'error');
+        }
     }
 
     function handleNewReason() {

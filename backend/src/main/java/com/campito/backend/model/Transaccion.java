@@ -42,6 +42,10 @@ public class Transaccion {
     @JoinColumn(name = "contacto_transferencia_id")
     private ContactoTransferencia contacto;
 
+    @ManyToOne
+    @JoinColumn(name = "cuenta_bancaria_id")
+    private CuentaBancaria cuentaBancaria;
+
     public Transaccion() {
     }
 
@@ -145,5 +149,13 @@ public class Transaccion {
 
     public void setContacto(ContactoTransferencia contacto) {
         this.contacto = contacto;
+    }
+
+    public CuentaBancaria getCuentaBancaria() {
+        return cuentaBancaria;
+    }
+
+    public void setCuentaBancaria(CuentaBancaria cuentaBancaria) {
+        this.cuentaBancaria = cuentaBancaria;
     }
 }
