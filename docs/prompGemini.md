@@ -1,48 +1,21 @@
-### Análisis del Problema
+## Rediseño de la tarjeta "Saldo actual" del dashboard
 
-El desafío principal es cómo presentar dos flujos de trabajo distintos (transacción normal vs. transferencia entre cuentas propias) dentro del mismo modal sin abrumar al usuario con demasiados campos a la vez. El objetivo es que la interfaz sea clara, intuitiva y minimice la posibilidad de errores.
+Actualmente en el dashboard hay una tarjeta que indica el "Saldo actual" del espacio de trabajo seleccionado por el usuario.
 
----
+Ahora necesito que trabajemos sobre esto. Quiero que en lugar de que haya una sola tarjeta saldo actual que ocupe todo el ancho del dashboard, ahora estará dividido en 4 pequeñas tarjetas que tienen el mismo diseño que la tarjeta saldo actual, pero que muestran información distinta.
 
-### Solución 1: Pestañas (Tabs)
+La información que se debe mostrar en las tarjetas es la siguiente:
 
-Esta es una opción muy común y efectiva para separar contenido relacionado pero distinto.
+1. Ingresos del mes
+2. Gastos del mes
+3. Saldo neto del mes
+4. Saldo historico
 
-**Diseño Propuesto:**
+Lo importante es que no es necesario buscar esta información en la base de datos, porque se puede obtener del estado actual del dashboard, por ejemplo, de los datos que usan los graficos, para así reducir el trafico de la red.
 
-1.  **En la parte superior del modal**, justo debajo del título "Nueva transacción", se colocarían dos pestañas.
-2.  La primera pestaña se llamaría **"Gastos/Ingresos"**.
-3.  La segunda pestaña se llamaría **"Movimiento entre cuentas"**.
-4.  Por defecto, la pestaña de "Gastos/Ingresos" estaría seleccionada, mostrando los campos actuales de tu modal.
-5.  Al hacer clic en la pestaña "Movimiento entre cuentas", los campos de "Gastos/Ingresos" se ocultarían y se mostrarían los nuevos campos:
-    * Cuenta de origen (lista desplegable de las cuentas bancarias)
-    * Cuenta de destino (lista desplegable de las cuentas bancarias)
-    * Monto ($)
+1. Ingresos del mes: la informacion de los ingresos del mes actual se pueden obtener del grafico "Ingresos vs Gastos mensuales". Se obtiene el valor del ingreso para el ultimo mes y el nombre del mes. Debe mostrarse en rojo siguiendo los colores del dashboard.
+2. Gastos del mes: la informacion de los gastos del mes actual se pueden obtener del grafico "Ingresos vs Gastos mensuales". Se obtiene el valor del gasto para el ultimo mes y el nombre del mes. Debe mostrarse en rojo siguiendo los colores del dashboard.
+3. Saldo neto del mes: esta informacion se obtiene de la misma forma que las dos anteriores, pero se hace la resta entre el ingreso y el gasto del ultimo mes. En este caso debe mostrarse de color verde o rojo siguiendo los colores del dashboard, dependiendo si es positivo o negativo el valor.
+4. Saldo historico: esta tarjeta es la actual de "Saldo actual", es decir, muestra la misma información, solo cambia el titulo.
 
-### Guía para la IA (con HTML/CSS/JS)
-
-Puedes proporcionarle a la IA las siguientes instrucciones para la implementación de la solución de pestañas:
-
-1.  **Estructura HTML:**
-    * El modal `div` contendrá un `div` para las pestañas.
-    * Dentro de ese `div`, habrá un `div` con la clase `.tabs` que contendrá dos botones o anclas, uno para "Gasto / Ingreso" y otro para "Transferencia".
-    * Habrá dos `div`s con la clase `.tab-content`, uno para cada tipo de formulario.
-    * El `div` de "Gasto / Ingreso" tendrá todos los campos actuales.
-    * El `div` de "Transferencia" tendrá los nuevos campos (cuenta origen, cuenta destino, monto).
-
-2.  **Estilos CSS:**
-    * Estiliza las pestañas para que parezcan botones que se pueden seleccionar.
-
-3.  **Lógica JavaScript:**
-    * Al cargar el modal, la pestaña de "Gastos/Ingresos" debe tener la clase `.active` y su contenido debe ser visible.
-    * Añade un evento `click` a cada pestaña.
-    * Cuando se haga clic en una pestaña, la función debe:
-        * Remover la clase `.active` de la pestaña y el contenido actualmente visibles.
-        * Añadir la clase `.active` a la pestaña que se acaba de cliquear y a su contenido correspondiente.
-
-Con esta guía, la IA podrá generar un código frontend que no solo sea funcional, sino también intuitivo y estéticamente agradable.
-
-- El contenido de la pestaña "Gastos/Ingresos" debe funcionar tal como funciona actualmente.
-- Al registrar una nueva transaccion del tipo "movimiento entre cuentas", al guardar la transaccion se debe consumir la API /cuentabancaria/transaccion/{idCuentaOrigen}/{idCuentaDestino}/{monto}
-- El modal debe funcionar tal como funciona actualmente, solo se debe agregar el comportamiento de las pestañas en el modal "Nueva transaccion".
-- Se debe notificar al usuario cuando alguna transaccion es correcta o no lo es, tal como funciona actualmente.
+Implementar estas tarjetas en el orden descripto en el dashboard, de izquierda a derecha para pantallas grandes y de arriba hacia abajo para pantallas pequeñas.

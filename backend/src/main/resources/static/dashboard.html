@@ -92,15 +92,45 @@
     </section>
 
     <main class="dashboard">
-        <!-- Sección de Saldo -->
+        <!-- Sección de Resumen de Saldos -->
         <section class="balance-section" aria-labelledby="balance-title">
-            <div class="card card--balance">
-                <h2 id="balance-title" class="card__title">Saldo actual</h2>
-                <div id="balanceAmount" class="balance__amount">
-                    <span class="balance__currency">$</span>
-                    <span class="balance__value">0</span>
+            <div class="summary-grid">
+                <!-- Ingresos del Mes -->
+                <div class="card card--balance">
+                    <h2 class="card__title">Ingresos del Mes</h2>
+                    <div id="incomeAmount" class="balance__amount balance__amount--income">
+                        <span class="balance__currency">$</span>
+                        <span class="balance__value">0</span>
+                    </div>
+                    <p id="incomeMonth" class="balance__date">--</p>
                 </div>
-                <p id="balanceDate" class="balance__date">Actualizando...</p>
+                <!-- Gastos del Mes -->
+                <div class="card card--balance">
+                    <h2 class="card__title">Gastos del Mes</h2>
+                    <div id="expenseAmount" class="balance__amount balance__amount--expense">
+                        <span class="balance__currency">$</span>
+                        <span class="balance__value">0</span>
+                    </div>
+                    <p id="expenseMonth" class="balance__date">--</p>
+                </div>
+                <!-- Saldo Neto del Mes -->
+                <div class="card card--balance">
+                    <h2 class="card__title">Saldo Neto del Mes</h2>
+                    <div id="netAmount" class="balance__amount">
+                        <span class="balance__currency">$</span>
+                        <span class="balance__value">0</span>
+                    </div>
+                    <p id="netMonth" class="balance__date">--</p>
+                </div>
+                <!-- Saldo Histórico -->
+                <div class="card card--balance">
+                    <h2 class="card__title">Saldo Histórico</h2>
+                    <div id="historicalBalanceAmount" class="balance__amount">
+                        <span class="balance__currency">$</span>
+                        <span class="balance__value">0</span>
+                    </div>
+                    <p id="historicalBalanceDate" class="balance__date">Actualizando...</p>
+                </div>
             </div>
         </section>
 
