@@ -786,6 +786,44 @@ body {
     padding: 0 1.5rem 1rem; /* Ajustar padding para que coincida con el form */
 }
 
+/* Pestañas en el Modal */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 -1.5rem 1rem; /* Extender hasta los bordes del modal__body */
+    padding: 0 1.5rem; /* Restaurar padding para el contenido */
+}
+
+.tabs__button {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+    margin-bottom: -1px; /* Alinea con el borde inferior */
+}
+
+.tabs__button:hover {
+    color: var(--color-text-primary);
+}
+
+.tabs__button--active {
+    color: var(--color-primary-blue);
+    border-bottom-color: var(--color-primary-blue);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content--active {
+    display: block;
+}
+
 /* Lista de Transacciones (.transactions-list) */
 .transactions-list {
     display: flex;

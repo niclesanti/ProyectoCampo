@@ -174,94 +174,128 @@
                 </button>
             </div>
             <div class="modal__body">
-                <form id="transactionForm" class="form">
-                    <div class="form__group">
-                        <label for="transactionType" class="form__label">Tipo</label>
-                        <select id="transactionType" name="transactionType" class="form__select" required>
-                            <option value="income">Ingreso</option>
-                            <option value="expense">Gasto</option>
-                        </select>
-                    </div>
-                    <div class="form__group">
-                        <label for="transactionDate" class="form__label">Fecha</label>
-                        <input type="date" id="transactionDate" name="transactionDate" class="form__input" required>
-                    </div>
-                    <div class="form__group">
-                        <label for="amount" class="form__label">Monto ($)</label>
-                        <input type="number" id="amount" name="amount" step="0.01" class="form__input" required maxlength="15">
-                    </div>
-                    <div class="form__group">
-                        <label for="reason" class="form__label">Motivo</label>
-                        <div class="form__group--horizontal">
-                            <select id="reason" name="reason" class="form__select" required>
-                                <option value="">Seleccionar motivo</option>
+                <div class="tabs">
+                    <button class="tabs__button tabs__button--active" data-tab="gasto-ingreso">Gastos/Ingresos</button>
+                    <button class="tabs__button" data-tab="transferencia">Movimientos entre cuentas</button>
+                </div>
+
+                <!-- Contenido de Gasto/Ingreso -->
+                <div id="tab-gasto-ingreso" class="tab-content tab-content--active">
+                    <form id="transactionForm" class="form">
+                        <div class="form__group">
+                            <label for="transactionType" class="form__label">Tipo</label>
+                            <select id="transactionType" name="transactionType" class="form__select" required>
+                                <option value="income">Ingreso</option>
+                                <option value="expense">Gasto</option>
                             </select>
-                            <button type="button" id="newReasonBtn" class="btn btn--secondary btn--small">
-                                <i class="fas fa-plus"></i> Nuevo
-                            </button>
                         </div>
-                        <div id="newReasonForm" class="form__group--nested form__group--nested-vertical" hidden>
-                            <div class="form__group--nested-inputs">
-                                <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
-                            </div>
-                            <div class="form__group--nested-actions">
-                                <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
-                                <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
-                            </div>
+                        <div class="form__group">
+                            <label for="transactionDate" class="form__label">Fecha</label>
+                            <input type="date" id="transactionDate" name="transactionDate" class="form__input" required>
                         </div>
-                    </div>
-                    <div class="form__group">
-                        <label for="bankAccount" class="form__label">Cuenta bancaria (opcional)</label>
-                        <div class="form__group--horizontal">
-                            <select id="bankAccount" name="bankAccount" class="form__select">
-                                <option value="">Seleccionar cuenta</option>
-                            </select>
-                            <button type="button" id="newBankAccountBtn" class="btn btn--secondary btn--small">
-                                <i class="fas fa-plus"></i> Nuevo
-                            </button>
+                        <div class="form__group">
+                            <label for="amount" class="form__label">Monto ($)</label>
+                            <input type="number" id="amount" name="amount" step="0.01" class="form__input" required maxlength="15">
                         </div>
-                        <div id="newBankAccountForm" class="form__group--nested form__group--nested-vertical" hidden>
-                            <div class="form__group--nested-inputs">
-                                <input type="text" id="newAccountNameInput" class="form__input" placeholder="Nombre de la cuenta" maxlength="50">
-                                <select id="financialEntitySelect" class="form__select">
-                                    <option value="">Seleccionar entidad</option>
+                        <div class="form__group">
+                            <label for="reason" class="form__label">Motivo</label>
+                            <div class="form__group--horizontal">
+                                <select id="reason" name="reason" class="form__select" required>
+                                    <option value="">Seleccionar motivo</option>
                                 </select>
+                                <button type="button" id="newReasonBtn" class="btn btn--secondary btn--small">
+                                    <i class="fas fa-plus"></i> Nuevo
+                                </button>
                             </div>
-                            <div class="form__group--nested-actions">
-                                <button type="button" id="cancelBankAccountBtn" class="btn btn--secondary btn--small">Cancelar</button>
-                                <button type="button" id="saveBankAccountBtn" class="btn btn--primary btn--small">Guardar</button>
+                            <div id="newReasonForm" class="form__group--nested form__group--nested-vertical" hidden>
+                                <div class="form__group--nested-inputs">
+                                    <input type="text" id="newReasonInput" class="form__input" placeholder="Nombre del nuevo motivo" maxlength="50">
+                                </div>
+                                <div class="form__group--nested-actions">
+                                    <button type="button" id="cancelReasonBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                    <button type="button" id="saveReasonBtn" class="btn btn--primary btn--small">Guardar</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form__group">
-                        <label for="recipient" class="form__label">Contacto emisor/destinatario (opcional)</label>
-                        <div class="form__group--horizontal">
-                            <select id="recipient" name="recipient" class="form__select">
-                                <option value="">Seleccionar contacto</option>
+                        <div class="form__group">
+                            <label for="bankAccount" class="form__label">Cuenta bancaria (opcional)</label>
+                            <div class="form__group--horizontal">
+                                <select id="bankAccount" name="bankAccount" class="form__select">
+                                    <option value="">Seleccionar cuenta</option>
+                                </select>
+                                <button type="button" id="newBankAccountBtn" class="btn btn--secondary btn--small">
+                                    <i class="fas fa-plus"></i> Nuevo
+                                </button>
+                            </div>
+                            <div id="newBankAccountForm" class="form__group--nested form__group--nested-vertical" hidden>
+                                <div class="form__group--nested-inputs">
+                                    <input type="text" id="newAccountNameInput" class="form__input" placeholder="Nombre de la cuenta" maxlength="50">
+                                    <select id="financialEntitySelect" class="form__select">
+                                        <option value="">Seleccionar entidad</option>
+                                    </select>
+                                </div>
+                                <div class="form__group--nested-actions">
+                                    <button type="button" id="cancelBankAccountBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                    <button type="button" id="saveBankAccountBtn" class="btn btn--primary btn--small">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__group">
+                            <label for="recipient" class="form__label">Contacto emisor/destinatario (opcional)</label>
+                            <div class="form__group--horizontal">
+                                <select id="recipient" name="recipient" class="form__select">
+                                    <option value="">Seleccionar contacto</option>
+                                </select>
+                                <button type="button" id="newContactBtn" class="btn btn--secondary btn--small">
+                                    <i class="fas fa-plus"></i> Nuevo
+                                </button>
+                            </div>
+                            <div id="newContactForm" class="form__group--nested form__group--nested-vertical" hidden>
+                                <div class="form__group--nested-inputs">
+                                    <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
+                                </div>
+                                <div class="form__group--nested-actions">
+                                    <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
+                                    <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__group">
+                            <label for="description" class="form__label">Descripción (opcional)</label>
+                            <textarea id="description" name="description" rows="3" class="form__textarea" maxlength="100"></textarea>
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Guardar transacción</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contenido de Movimiento entre cuentas -->
+                <div id="tab-transferencia" class="tab-content">
+                    <form id="transferForm" class="form">
+                        <div class="form__group">
+                            <label for="transferSourceAccount" class="form__label">Cuenta de origen</label>
+                            <select id="transferSourceAccount" name="transferSourceAccount" class="form__select" required>
+                                <option value="">Seleccionar cuenta de origen</option>
                             </select>
-                            <button type="button" id="newContactBtn" class="btn btn--secondary btn--small">
-                                <i class="fas fa-plus"></i> Nuevo
-                            </button>
                         </div>
-                        <div id="newContactForm" class="form__group--nested form__group--nested-vertical" hidden>
-                            <div class="form__group--nested-inputs">
-                                <input type="text" id="newContactInput" placeholder="Ingrese el nuevo contacto" class="form__input" maxlength="50">
-                            </div>
-                            <div class="form__group--nested-actions">
-                                <button type="button" id="cancelContactBtn" class="btn btn--secondary btn--small">Cancelar</button>
-                                <button type="button" id="saveContactBtn" class="btn btn--primary btn--small">Guardar</button>
-                            </div>
+                        <div class="form__group">
+                            <label for="transferDestinationAccount" class="form__label">Cuenta de destino</label>
+                            <select id="transferDestinationAccount" name="transferDestinationAccount" class="form__select" required>
+                                <option value="">Seleccionar cuenta de destino</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="form__group">
-                        <label for="description" class="form__label">Descripción (opcional)</label>
-                        <textarea id="description" name="description" rows="3" class="form__textarea" maxlength="100"></textarea>
-                    </div>
-                    <div class="form__actions">
-                        <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
-                        <button type="submit" class="btn btn--primary">Guardar transacción</button>
-                    </div>
-                </form>
+                        <div class="form__group">
+                            <label for="transferAmount" class="form__label">Monto ($)</label>
+                            <input type="number" id="transferAmount" name="transferAmount" step="0.01" class="form__input" required maxlength="15">
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelTransferBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Realizar transferencia</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

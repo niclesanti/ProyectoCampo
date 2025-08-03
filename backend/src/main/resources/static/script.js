@@ -44,6 +44,7 @@
         budgetForm: document.getElementById('budgetForm'),
         workspaceForm: document.getElementById('workspaceForm'),
         shareForm: document.getElementById('shareForm'),
+        transferForm: document.getElementById('transferForm'),
         newReasonForm: document.getElementById('newReasonForm'),
         newContactForm: document.getElementById('newContactForm'),
         newBankAccountForm: document.getElementById('newBankAccountForm'),
@@ -209,6 +210,7 @@
         document.getElementById('closeWorkspaceModalBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('closeShareModalBtn').addEventListener('click', () => toggleModal('shareModal', false));
         document.getElementById('cancelTransactionBtn').addEventListener('click', () => toggleModal('transactionModal', false));
+        document.getElementById('cancelTransferBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('cancelBudgetBtn').addEventListener('click', () => toggleModal('budgetModal', false));
         document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
         document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('shareModal', false));
@@ -223,6 +225,23 @@
         DOMElements.budgetForm.addEventListener('submit', handleBudgetSubmit);
         DOMElements.workspaceForm.addEventListener('submit', handleWorkspaceSubmit);
         DOMElements.shareForm.addEventListener('submit', handleShareSubmit);
+        DOMElements.transferForm.addEventListener('submit', handleTransferSubmit);
+
+        // Listeners para las pestañas del modal de transacciones
+        const tabButtons = document.querySelectorAll('.tabs__button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                // Remover clase activa de todos los botones y contenidos
+                tabButtons.forEach(btn => btn.classList.remove('tabs__button--active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('tab-content--active'));
+
+                // Añadir clase activa al botón y contenido seleccionados
+                button.classList.add('tabs__button--active');
+                document.getElementById(`tab-${tab}`).classList.add('tab-content--active');
+            });
+        });
+
         document.getElementById('newReasonBtn').addEventListener('click', () => toggleNestedForm('newReasonForm', true));
         document.getElementById('cancelReasonBtn').addEventListener('click', () => toggleNestedForm('newReasonForm', false));
         document.getElementById('saveReasonBtn').addEventListener('click', handleNewReason);
@@ -273,7 +292,9 @@
             container.innerHTML = '<p class="transactions-list__empty">No hay cuentas bancarias.</p>';
             return;
         }
-        appState.bankAccounts.forEach(account => {
+        // Crear una copia invertida del array para no modificar el estado original
+        const reversedAccounts = [...appState.bankAccounts].reverse();
+        reversedAccounts.forEach(account => {
             const item = document.createElement('div');
             item.className = 'account-item';
             item.innerHTML = `
@@ -536,8 +557,9 @@
             // Invalidar la caché para este espacio de trabajo
             delete appState.dashboardCache[currentWorkspaceId];
 
-            // Actualizar el dashboard con los nuevos datos
+            // Actualizar el dashboard y las cuentas bancarias
             actualizarDashboard(currentWorkspaceId);
+            cargarCuentasBancarias(currentWorkspaceId);
 
             toggleModal('transactionModal', false);
             showNotification('Transacción guardada con éxito', 'success');
@@ -545,6 +567,46 @@
         .catch(error => {
             console.error('Error:', error);
             showNotification('Error al guardar la transacción', 'error');
+        });
+    }
+
+    function handleTransferSubmit(event) {
+        event.preventDefault();
+        const idCuentaOrigen = document.getElementById('transferSourceAccount').value;
+        const idCuentaDestino = document.getElementById('transferDestinationAccount').value;
+        const monto = parseFloat(document.getElementById('transferAmount').value);
+
+        if (!idCuentaOrigen || !idCuentaDestino || isNaN(monto) || monto <= 0) {
+            showNotification('Por favor, complete todos los campos.', 'error');
+            return;
+        }
+
+        if (idCuentaOrigen === idCuentaDestino) {
+            showNotification('La cuenta de origen y destino no pueden ser la misma.', 'error');
+            return;
+        }
+
+        fetch(`/cuentabancaria/transaccion/${idCuentaOrigen}/${idCuentaDestino}/${monto}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                toggleModal('transactionModal', false);
+                showNotification('Transferencia realizada con éxito', 'success');
+                const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+                cargarCuentasBancarias(idEspacioTrabajo);
+                cargarTransaccionesRecientes(idEspacioTrabajo);
+                actualizarDashboard(idEspacioTrabajo);
+            } else {
+                throw new Error('Error al realizar la transferencia.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
         });
     }
 
@@ -942,6 +1004,21 @@
             opt.textContent = cuenta.nombre;
             selectElement.appendChild(opt);
         });
+
+        // Poblar también los selects del formulario de transferencia
+        const transferSourceSelect = document.getElementById('transferSourceAccount');
+        const transferDestinationSelect = document.getElementById('transferDestinationAccount');
+        if (transferSourceSelect && transferDestinationSelect) {
+            transferSourceSelect.innerHTML = `<option value="">Seleccionar cuenta de origen</option>`;
+            transferDestinationSelect.innerHTML = `<option value="">Seleccionar cuenta de destino</option>`;
+            appState.bankAccounts.forEach(cuenta => {
+                const opt = document.createElement('option');
+                opt.value = cuenta.id;
+                opt.textContent = cuenta.nombre;
+                transferSourceSelect.appendChild(opt.cloneNode(true));
+                transferDestinationSelect.appendChild(opt.cloneNode(true));
+            });
+        }
     }
 
     function addBankAccountToSelector(cuenta) {
