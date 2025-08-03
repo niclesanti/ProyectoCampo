@@ -266,7 +266,7 @@
     }
 
     function updateDashboard() {
-        updateBalance();
+        actualizarTarjetasResumen();
         renderRecentTransactions();
         initializeCharts();
         populateAllSelectors();
@@ -274,9 +274,24 @@
 
     function updateBalance() {
         const balance = appState.currentBalance;
-        DOMElements.balanceAmount.textContent = balance.toLocaleString('es-AR');
-        DOMElements.balanceContainer.className = `balance__amount ${balance >= 0 ? 'balance__amount--positive' : 'balance__amount--negative'}`;
-        DOMElements.balanceDate.textContent = `Actualizado: ${new Date().toLocaleDateString('es-AR')}`;
+        const historicalBalanceAmountEl = document.getElementById('historicalBalanceAmount');
+        const historicalBalanceValueEl = historicalBalanceAmountEl.querySelector('.balance__value');
+        const historicalBalanceDate = document.getElementById('historicalBalanceDate');
+
+        if (historicalBalanceValueEl) {
+            historicalBalanceValueEl.textContent = balance.toLocaleString('es-AR');
+        }
+        if (historicalBalanceDate) {
+            historicalBalanceDate.textContent = `Actualizado: ${new Date().toLocaleDateString('es-AR')}`;
+        }
+
+        // Aplicar clases de color de forma segura
+        historicalBalanceAmountEl.classList.remove('balance__amount--positive', 'balance__amount--negative');
+        if (balance >= 0) {
+            historicalBalanceAmountEl.classList.add('balance__amount--positive');
+        } else {
+            historicalBalanceAmountEl.classList.add('balance__amount--negative');
+        }
     }
 
     function renderRecentTransactions() {
@@ -1289,7 +1304,8 @@
     function formatearMes(fechaString) {
         const [year, month] = fechaString.split('-');
         const fecha = new Date(year, month - 1);
-        return fecha.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+        const monthName = fecha.toLocaleDateString('es-ES', { month: 'long' });
+        return monthName.charAt(0).toUpperCase() + monthName.slice(1);
     }
 
     /**
@@ -1348,6 +1364,9 @@
         chart.data.datasets[0].data = ingresos;
         chart.data.datasets[1].data = gastos;
         chart.update();
+
+        // Llama a la función para actualizar las tarjetas de resumen
+        actualizarTarjetasResumen();
     }
 
     /**
@@ -1382,6 +1401,37 @@
         chart.data.labels = labels;
         chart.data.datasets[0].data = saldos;
         chart.update();
+    }
+
+    function actualizarTarjetasResumen() {
+        const monthlyData = appState.charts.monthly?.data;
+        if (!monthlyData || monthlyData.labels.length === 0) {
+            // Si no hay datos, resetea las tarjetas a 0 o a un estado inicial
+            return;
+        }
+
+        const lastIndex = monthlyData.labels.length - 1;
+        const lastMonthLabel = monthlyData.labels[lastIndex];
+        const income = monthlyData.datasets[0].data[lastIndex];
+        const expense = monthlyData.datasets[1].data[lastIndex];
+        const net = income - expense;
+
+        // Actualizar tarjeta de Ingresos
+        document.getElementById('incomeAmount').querySelector('.balance__value').textContent = income.toLocaleString('es-AR');
+        document.getElementById('incomeMonth').textContent = lastMonthLabel;
+
+        // Actualizar tarjeta de Gastos
+        document.getElementById('expenseAmount').querySelector('.balance__value').textContent = expense.toLocaleString('es-AR');
+        document.getElementById('expenseMonth').textContent = lastMonthLabel;
+
+        // Actualizar tarjeta de Saldo Neto
+        const netAmountEl = document.getElementById('netAmount');
+        netAmountEl.querySelector('.balance__value').textContent = net.toLocaleString('es-AR');
+        document.getElementById('netMonth').textContent = lastMonthLabel;
+        netAmountEl.className = `balance__amount ${net >= 0 ? 'balance__amount--positive' : 'balance__amount--negative'}`;
+
+        // Actualizar tarjeta de Saldo Histórico (que ahora es manejada por updateBalance)
+        updateBalance();
     }
 
     document.addEventListener('DOMContentLoaded', () => {

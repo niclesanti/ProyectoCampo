@@ -650,9 +650,15 @@ body {
 -------------------------------------------------------------------*/
 
 /* Saldo (.balance-section) */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
 .card--balance {
     text-align: center;
-    padding: 1.5rem 1rem;
+    padding: 0.75rem 1rem;
     background-color: var(--color-conteiner-saldo);
     color: var(--color-text-primary);
     position: relative;
@@ -674,13 +680,13 @@ body {
 
 .card--balance .card__title {
     color: var(--color-text-primary);
-    font-size: 1rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .balance__amount {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     margin: 0.25rem 0;
     line-height: 1.1;
@@ -695,16 +701,19 @@ body {
     color: var(--color-text-saldo-negativo);
 }
 
+.balance__amount--income {
+    color: var(--color-text-saldo-positivo);
+}
+
+.balance__amount--expense {
+    color: var(--color-text-saldo-negativo);
+}
+
 .balance__currency {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 600;
     opacity: 0.8;
     margin-right: 0.2rem;
-}
-
-.balance__date {
-    color: rgba(58, 58, 58, 0.8);
-    font-size: 0.8rem;
 }
 
 /* Acciones Rápidas (.quick-actions) */
@@ -1304,6 +1313,12 @@ body {
 
 /* 7. Media Queries (Diseño Responsivo)
 -------------------------------------------------------------------*/
+@media (max-width: 1200px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 900px) {
     .charts-section {
         grid-template-columns: 1fr;
@@ -1315,6 +1330,11 @@ body {
 }
 
 @media (max-width: 600px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem; /* Reducir el espacio entre tarjetas en móvil */
+    }
+
     .workspace-selector__container {
         flex-direction: column;
     }
