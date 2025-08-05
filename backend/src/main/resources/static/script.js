@@ -551,6 +551,7 @@
             // Añadir la nueva transacción a la lista de recientes
             const reasonObj = appState.reasons.find(r => r.id == transaccionGuardada.idMotivo);
             const contactObj = appState.contacts.find(c => c.id == transaccionGuardada.idContacto);
+            const bankAccountObj = appState.bankAccounts.find(b => b.id == transaccionGuardada.idCuentaBancaria);
             const newUITransaction = {
                 id: transaccionGuardada.id,
                 type: transaccionGuardada.tipo === 'INGRESO' ? 'income' : 'expense',
@@ -560,7 +561,8 @@
                 description: transaccionGuardada.descripcion,
                 date: transaccionGuardada.fecha,
                 fechaCreacion: transaccionGuardada.fechaCreacion, // Corregido: Añadir fecha de creación
-                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria // Corregido: Añadir usuario de auditoría
+                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria, // Corregido: Añadir usuario de auditoría
+                cuentaBancaria: bankAccountObj ? bankAccountObj.nombre : null
             };
 
             appState.transactions.unshift(newUITransaction);
@@ -678,6 +680,10 @@
             <div class="transaction-detail__item">
                 <span class="transaction-detail__label">Motivo</span>
                 <span class="transaction-detail__value">${transaction.reason}</span>
+            </div>
+            <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Cuenta Bancaria</span>
+                <span class="transaction-detail__value">${transaction.cuentaBancaria || '-'}</span>
             </div>
             <div class="transaction-detail__item">
                 <span class="transaction-detail__label">Contacto</span>
@@ -1261,7 +1267,8 @@
                 description: t.descripcion,
                 date: t.fecha,
                 fechaCreacion: t.fechaCreacion,
-                nombreCompletoAuditoria: t.nombreCompletoAuditoria
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria,
+                cuentaBancaria: t.CuentaBancaria
             }));
             renderRecentTransactions();
         })

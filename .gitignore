@@ -32,6 +32,7 @@ secrets/
 
 # Gemini instrucciones
 GEMINI.md
-#GuiaFrontend.md
+GuiaFrontend.md
 GuiaTesting.md
 resumenProyecto.md
+prompGemini.md

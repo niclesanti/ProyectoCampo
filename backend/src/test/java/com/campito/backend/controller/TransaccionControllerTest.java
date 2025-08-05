@@ -115,7 +115,7 @@ public class TransaccionControllerTest {
     @WithMockUser(username = "user")
     void buscarTransaccion_cuandoExitoso_entoncesStatus200() throws Exception {
         TransaccionBusquedaDTO busquedaDTO = new TransaccionBusquedaDTO(7, 2025, null, null, 1L);
-        List<TransaccionListadoDTO> listado = Collections.singletonList(new TransaccionListadoDTO(1L, LocalDate.now(), 50.0f, TipoTransaccion.GASTO, "Compra", "User", LocalDateTime.now(), 1L, "Espacio", 1L, "Motivo", null, null));
+        List<TransaccionListadoDTO> listado = Collections.singletonList(new TransaccionListadoDTO(1L, LocalDate.now(), 50.0f, TipoTransaccion.GASTO, "Compra", "User", LocalDateTime.now(), 1L, "Espacio", 1L, "Motivo", null, null, null));
         when(transaccionService.buscarTransaccion(any(TransaccionBusquedaDTO.class))).thenReturn(listado);
 
         mockMvc.perform(post("/transaccion/buscar")
@@ -300,7 +300,7 @@ public class TransaccionControllerTest {
     @Test
     @WithMockUser(username = "user")
     void buscarTransaccionesRecientes_cuandoExitoso_entoncesStatus200() throws Exception {
-        List<TransaccionListadoDTO> listado = Collections.singletonList(new TransaccionListadoDTO(1L, LocalDate.now(), 200.0f, TipoTransaccion.GASTO, "Reciente", "User", LocalDateTime.now(), 1L, "Espacio", 1L, "Motivo", null, null));
+        List<TransaccionListadoDTO> listado = Collections.singletonList(new TransaccionListadoDTO(1L, LocalDate.now(), 200.0f, TipoTransaccion.GASTO, "Reciente", "User", LocalDateTime.now(), 1L, "Espacio", 1L, "Motivo", null, null,null));
         when(transaccionService.buscarTransaccionesRecientes(anyLong())).thenReturn(listado);
 
         mockMvc.perform(get("/transaccion/buscarRecientes/1"))
