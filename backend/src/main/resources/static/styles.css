@@ -636,6 +636,7 @@ body {
     font-weight: 600;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: var(--transition-fast);
     flex-shrink: 0;
@@ -670,7 +671,7 @@ body {
 
 .card--balance {
     text-align: center;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     background-color: var(--color-conteiner-saldo);
     color: var(--color-text-primary);
     position: relative;
@@ -698,9 +699,9 @@ body {
 }
 
 .balance__amount {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin: 0.25rem 0;
+    margin: 0.1rem 0;
     line-height: 1.1;
     transition: color 0.3s ease;
 }
@@ -722,7 +723,7 @@ body {
 }
 
 .balance__currency {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
     opacity: 0.8;
     margin-right: 0.2rem;

@@ -869,16 +869,8 @@
 
     function handleBudgetSubmit(event) {
         event.preventDefault();
-        const formData = new FormData(event.target);
-        const newBudget = {
-            id: Date.now(),
-            reason: formData.get('budgetReason'),
-            threshold: parseFloat(formData.get('budgetThreshold')),
-        };
-        appState.budgets.push(newBudget);
-        renderAlertsList();
         toggleModal('budgetModal', false);
-        showNotification('Alerta de presupuesto guardada', 'success');
+        showNotification('¡Esta función se implementará pronto!', 'info');
     }
 
     function populateAllSelectors() {
