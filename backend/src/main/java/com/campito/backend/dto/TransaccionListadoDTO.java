@@ -18,7 +18,8 @@ public record TransaccionListadoDTO(
     Long idMotivo,
     String nombreMotivo,
     Long idContacto,
-    String nombreContacto
+    String nombreContacto,
+    String CuentaBancaria
 ) {
 
 }

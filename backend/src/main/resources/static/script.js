@@ -218,6 +218,8 @@
         // Listeners para el nuevo modal de detalle
         document.getElementById('closeTransactionDetailModalBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
         document.getElementById('backTransactionDetailBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
+        document.getElementById('removeTransactionBtn').addEventListener('click', handleRemoveTransaction);
+
 
         // Envíos de formularios
         DOMElements.transactionForm.addEventListener('submit', handleTransactionSubmit);
@@ -551,6 +553,7 @@
             // Añadir la nueva transacción a la lista de recientes
             const reasonObj = appState.reasons.find(r => r.id == transaccionGuardada.idMotivo);
             const contactObj = appState.contacts.find(c => c.id == transaccionGuardada.idContacto);
+            const bankAccountObj = appState.bankAccounts.find(b => b.id == transaccionGuardada.idCuentaBancaria);
             const newUITransaction = {
                 id: transaccionGuardada.id,
                 type: transaccionGuardada.tipo === 'INGRESO' ? 'income' : 'expense',
@@ -560,8 +563,10 @@
                 description: transaccionGuardada.descripcion,
                 date: transaccionGuardada.fecha,
                 fechaCreacion: transaccionGuardada.fechaCreacion, // Corregido: Añadir fecha de creación
-                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria // Corregido: Añadir usuario de auditoría
+                nombreCompletoAuditoria: transaccionGuardada.nombreCompletoAuditoria, // Corregido: Añadir usuario de auditoría
+                cuentaBancaria: bankAccountObj ? bankAccountObj.nombre : null
             };
+
 
             appState.transactions.unshift(newUITransaction);
             if (appState.transactions.length > 6) {
@@ -680,6 +685,10 @@
                 <span class="transaction-detail__value">${transaction.reason}</span>
             </div>
             <div class="transaction-detail__item">
+                <span class="transaction-detail__label">Cuenta Bancaria</span>
+                <span class="transaction-detail__value">${transaction.cuentaBancaria || '-'}</span>
+            </div>
+            <div class="transaction-detail__item">
                 <span class="transaction-detail__label">Contacto</span>
                 <span class="transaction-detail__value">${transaction.recipient || '-'}</span>
             </div>
@@ -697,6 +706,7 @@
         `;
 
         toggleModal('transactionDetailModal', true);
+        DOMElements.transactionDetailModal.dataset.transactionId = transaction.id;
     }
 
     function handleSearchSubmit(event) {
@@ -742,7 +752,8 @@
                 description: t.descripcion,
                 date: t.fecha,
                 fechaCreacion: t.fechaCreacion,
-                nombreCompletoAuditoria: t.nombreCompletoAuditoria
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria,
+                cuentaBancaria: t.CuentaBancaria
             }));
             applySearchOrder();
             showNotification(`Se encontraron ${transactions.length} transacciones.`, 'success');
@@ -858,16 +869,8 @@
 
     function handleBudgetSubmit(event) {
         event.preventDefault();
-        const formData = new FormData(event.target);
-        const newBudget = {
-            id: Date.now(),
-            reason: formData.get('budgetReason'),
-            threshold: parseFloat(formData.get('budgetThreshold')),
-        };
-        appState.budgets.push(newBudget);
-        renderAlertsList();
         toggleModal('budgetModal', false);
-        showNotification('Alerta de presupuesto guardada', 'success');
+        showNotification('¡Esta función se implementará pronto!', 'info');
     }
 
     function populateAllSelectors() {
@@ -1261,7 +1264,8 @@
                 description: t.descripcion,
                 date: t.fecha,
                 fechaCreacion: t.fechaCreacion,
-                nombreCompletoAuditoria: t.nombreCompletoAuditoria
+                nombreCompletoAuditoria: t.nombreCompletoAuditoria,
+                cuentaBancaria: t.CuentaBancaria
             }));
             renderRecentTransactions();
         })
@@ -1493,6 +1497,64 @@
         const shouldShow = forceShow !== undefined ? forceShow : menu.hidden;
 
         menu.hidden = !shouldShow;
+    }
+
+    function handleRemoveTransaction() {
+        const transactionId = DOMElements.transactionDetailModal.dataset.transactionId;
+        if (!transactionId) {
+            showNotification('No se pudo identificar la transacción a eliminar.', 'error');
+            return;
+        }
+
+        const confirmed = confirm('¿Deseas borrar permanentemente esta transacción?');
+
+        if (confirmed) {
+            fetch(`/transaccion/remover/${transactionId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Eliminar la transacción del estado local
+                    const removedTransaction = appState.transactions.find(t => t.id == transactionId);
+                    appState.transactions = appState.transactions.filter(t => t.id != transactionId);
+                    appState.lastSearchResults = appState.lastSearchResults.filter(t => t.id != transactionId);
+
+                    // Actualizar el saldo
+                    if (removedTransaction) {
+                        if (removedTransaction.type === 'income') {
+                            appState.currentBalance -= removedTransaction.amount;
+                        } else {
+                            appState.currentBalance -= removedTransaction.amount;
+                        }
+                        const currentWorkspaceId = document.getElementById('workspaceSelect').value;
+                        const currentWorkspace = appState.workspaces.find(ws => ws.id == currentWorkspaceId);
+                        if (currentWorkspace) {
+                            currentWorkspace.saldo = appState.currentBalance;
+                        }
+                        updateBalance();
+                    }
+
+                    // Invalidar caché y actualizar UI
+                    const idEspacioTrabajo = document.getElementById('workspaceSelect').value;
+                    delete appState.dashboardCache[idEspacioTrabajo];
+                    actualizarDashboard(idEspacioTrabajo);
+                    cargarCuentasBancarias(idEspacioTrabajo);
+                    renderRecentTransactions();
+                    if (!DOMElements.searchModal.hidden) {
+                        applySearchOrder();
+                    }
+
+                    toggleModal('transactionDetailModal', false);
+                    showNotification('Transacción eliminada con éxito.', 'success');
+                } else {
+                    throw new Error('No se pudo eliminar la transacción.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar la transacción:', error);
+                showNotification(error.message, 'error');
+            });
+        }
     }
 
 })();

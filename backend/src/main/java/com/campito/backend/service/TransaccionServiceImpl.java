@@ -441,7 +441,8 @@ public class TransaccionServiceImpl implements TransaccionService {
                     t.getMotivo() != null ? t.getMotivo().getId() : null,
                     t.getMotivo() != null ? t.getMotivo().getMotivo() : null,
                     t.getContacto() != null ? t.getContacto().getId() : null,
-                    t.getContacto() != null ? t.getContacto().getNombre() : null
+                    t.getContacto() != null ? t.getContacto().getNombre() : null,
+                    t.getCuentaBancaria() != null ? t.getCuentaBancaria().getEntidadFinanciera()+"/"+t.getCuentaBancaria().getNombre() : null
                 ))
                 .toList();
     }
