@@ -147,6 +147,18 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+.btn--danger {
+    background-color: transparent;
+    color: var(--color-accent-red);
+    border-color: transparent;
+}
+
+.btn--danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: transparent;
+    color: var(--color-accent-red);
+}
+
 .btn--text {
     background: transparent;
     color: var(--color-primary-blue);
