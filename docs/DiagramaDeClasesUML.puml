@@ -1,0 +1,153 @@
+@startuml DiagramaDeClasesUML
+
+'DEFINICION DE CLASES DEL MODELO
+class Usuario {
+    - id: Long
+    - nombre: String
+    - email: String
+    - fotoPerfil: String
+    - proveedor: String
+    - idProveedor: String
+    - rol: String
+    - activo: Boolean
+    - fechaRegistro: LocalDateTime
+    - fechaUltimoAcceso: LocalDateTime
+}
+
+class Transaccion {
+    - id: Long
+    - tipo: TipoTransaccion
+    - monto: Float
+    - fecha: LocalDate
+    - descripcion: String
+    - nombreCompletoAuditoria: String
+    - fechaCreacion: LocalDateTime
+}
+
+class MotivoTransaccion {
+    - id: Long
+    - motivo: String
+}
+
+'Puede ser el emisor o receptor de una transferencia
+class ContactoTransferencia {
+    - id: Long
+    - nombre: String
+}
+
+enum TipoTransaccion {
+    INGRESO
+    GASTO
+}
+
+class EspacioTrabajo {
+    - id: Long
+    - nombre: String
+    - saldo: Float
+}
+
+class Presupuesto {
+    - id: Long
+    - monto: Float
+    - periodoInicio: LocalDateTime
+    - periodoFin: LocalDateTime
+    - umbralAlerta: Float
+}
+
+'ASOCIACIONES DE CLASES DE MODELO
+Usuario "1" -- "0..*" EspacioTrabajo : gestiona >
+Usuario "0..*" -- "0..*" EspacioTrabajo : participa >
+Transaccion "0..*" -- "1" EspacioTrabajo : pertenece >
+Transaccion "0..*" -- "1" MotivoTransaccion : tiene >
+Transaccion "0..*" -- "1" ContactoTransferencia : tiene >
+Presupuesto "0..*" -- "1" EspacioTrabajo : asignado a >
+Presupuesto "0..*" -- "0..1" motivoTransaccion : relacionado con >
+ContactoTransferencia "0..*" -- "1" EspacioTrabajo : pertenece >
+MotivoTransaccion "0..*" -- "1" EspacioTrabajo : pertenece >
+
+'DEFINICION DE GESTORES
+interface IUsuarioService <<service>> {
+    + registrarUsuario(): void
+    + iniciarSesion(): Boolean
+    + asignarEspacioTrabajo(): void
+}
+class UsuarioServiceImpl <<service>> {
+    + registrarUsuario(): void
+    + iniciarSesion(): Boolean
+    + asignarEspacioTrabajo(): void
+}
+
+interface ITransaccionesService <<service>> {
+    + registrarTransaccion(): void
+    + removerTransaccion(): void
+    + buscarTransaccion(): List<Transaccion>
+    + registrarContactoTransferencia(): void
+    + nuevoMotivoTransaccion(): void
+}
+class TransaccionesServiceImpl <<service>> {
+    + nuevaTransaccion(): void
+    + removerTransaccion(): void
+    + buscarTransaccion(): List<Transaccion>
+    + registrarContactoTransferencia(): void
+    + nuevoMotivoTransaccion(): void
+}
+interface IEspacioTrabajoService <<service>> {
+    + crearEspacioTrabajo(): void
+    + actualizarEspacioTrabajo(): void
+    + eliminarEspacioTrabajo(): void
+    + obtenerEspacioTrabajo(): EspacioTrabajo
+    + compartirEspacioTrabajo(): void
+}
+class EspacioTrabajoServiceImpl <<service>> {
+    + crearEspacioTrabajo(): void
+    + actualizarEspacioTrabajo(): void
+    + eliminarEspacioTrabajo(): void
+    + obtenerEspacioTrabajo(): EspacioTrabajo
+    + compartirEspacioTrabajo(): void
+}
+
+'ASOCIACIONES DE GESTORES
+UsuarioServiceImpl ..> Usuario : usa
+UsuarioServiceImpl ..> EspacioTrabajo : usa
+UsuarioServiceImpl --|> IUsuarioService : implementa
+TransaccionesServiceImpl ..> Transaccion : usa
+TransaccionesServiceImpl ..> MotivoTransaccion : usa
+TransaccionesServiceImpl ..> ContactoTransferencia : usa
+TransaccionesServiceImpl --|> ITransaccionesService : implementa
+EspacioTrabajoServiceImpl ..> EspacioTrabajo : usa
+EspacioTrabajoServiceImpl --|> IEspacioTrabajoService : implementa
+
+
+'DEFINICION DE PATRON REPOSITORIO
+interface UsuarioRepository <<repository>> {
+}
+
+interface TransaccionRepository <<repository>> {
+}
+
+interface EspacioTrabajoRepository <<repository>> {
+}
+
+interface MotivoTransaccionRepository <<repository>> {
+}
+
+interface ContactoTransferenciaRepository <<repository>> {
+}
+
+'ASOCIACIONES DE REPOSITORIOS
+UsuarioRepository ..> Usuario : usa
+UsuarioServiceImpl ..> UsuarioRepository : usa
+
+TransaccionRepository ..> Transaccion : usa
+TransaccionServiceImpl ..> TransaccionRepository : usa
+
+EspacioTrabajoRepository ..> EspacioTrabajo : usa
+EspacioTrabajoServiceImpl ..> EspacioTrabajoRepository : usa
+
+MotivoTransaccionRepository ..> MotivoTransaccion : usa
+TransaccionServiceImpl ..> MotivoTransaccionRepository : usa
+
+ContactoTransferenciaRepository ..> ContactoTransferencia : usa
+TransaccionServiceImpl ..> ContactoTransferenciaRepository : usa
+
+@enduml
