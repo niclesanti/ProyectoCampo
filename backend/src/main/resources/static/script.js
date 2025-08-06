@@ -780,7 +780,7 @@
 
             console.log('Enviando datos:', JSON.stringify(workspaceData));
 
-            fetch('http://localhost:8080/espaciotrabajo/registrar', {
+            fetch('/espaciotrabajo/registrar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -843,7 +843,7 @@
 
         const idUsuarioAdmin = appState.authenticatedUserId;
 
-        fetch(`http://localhost:8080/espaciotrabajo/compartir/${email}/${workspaceId}/${idUsuarioAdmin}`, {
+        fetch(`/espaciotrabajo/compartir/${email}/${workspaceId}/${idUsuarioAdmin}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
