@@ -1,0 +1,22 @@
+{
+  "name": "Campito",
+  "short_name": "Campito",
+  "description": "App para la gestion de finanzas personales.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/logo_login.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo_login.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
