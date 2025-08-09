@@ -36,8 +36,7 @@
         transactionModal: document.getElementById('transactionModal'),
         searchModal: document.getElementById('searchModal'),
         budgetModal: document.getElementById('budgetModal'),
-        workspaceModal: document.getElementById('workspaceModal'),
-        shareModal: document.getElementById('shareModal'),
+        manageWorkspacesModal: document.getElementById('manageWorkspacesModal'),
         shareWorkspaceSelect: document.getElementById('shareWorkspaceSelect'),
         transactionForm: document.getElementById('transactionForm'),
         searchForm: document.getElementById('searchForm'),
@@ -149,10 +148,9 @@
         document.getElementById('newTransactionBtn').addEventListener('click', () => toggleModal('transactionModal', true));
         document.getElementById('searchTransactionsBtn').addEventListener('click', () => toggleModal('searchModal', true));
         document.getElementById('setupAlertsBtn').addEventListener('click', () => toggleModal('budgetModal', true));
-        document.getElementById('newWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', true));
-        document.getElementById('shareWorkspaceBtn').addEventListener('click', () => {
-            toggleModal('shareModal', true);
-            populateShareWorkspaceSelect(); // Populate the dropdown when opening the modal
+        document.getElementById('manageWorkspacesBtn').addEventListener('click', () => {
+            toggleModal('manageWorkspacesModal', true);
+            populateShareWorkspaceSelect();
         });
 
         // Listeners para el menú lateral
@@ -207,13 +205,12 @@
         document.getElementById('closeTransactionModalBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('closeSearchModalBtn').addEventListener('click', () => toggleModal('searchModal', false));
         document.getElementById('closeBudgetModalBtn').addEventListener('click', () => toggleModal('budgetModal', false));
-        document.getElementById('closeWorkspaceModalBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
-        document.getElementById('closeShareModalBtn').addEventListener('click', () => toggleModal('shareModal', false));
+        document.getElementById('closeManageWorkspacesModalBtn').addEventListener('click', () => toggleModal('manageWorkspacesModal', false));
         document.getElementById('cancelTransactionBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('cancelTransferBtn').addEventListener('click', () => toggleModal('transactionModal', false));
         document.getElementById('cancelBudgetBtn').addEventListener('click', () => toggleModal('budgetModal', false));
-        document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('workspaceModal', false));
-        document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('shareModal', false));
+        document.getElementById('cancelWorkspaceBtn').addEventListener('click', () => toggleModal('manageWorkspacesModal', false));
+        document.getElementById('cancelShareBtn').addEventListener('click', () => toggleModal('manageWorkspacesModal', false));
 
         // Listeners para el nuevo modal de detalle
         document.getElementById('closeTransactionDetailModalBtn').addEventListener('click', () => toggleModal('transactionDetailModal', false));
@@ -229,19 +226,29 @@
         DOMElements.shareForm.addEventListener('submit', handleShareSubmit);
         DOMElements.transferForm.addEventListener('submit', handleTransferSubmit);
 
-        // Listeners para las pestañas del modal de transacciones
-        const tabButtons = document.querySelectorAll('.tabs__button');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tab = button.dataset.tab;
-                // Remover clase activa de todos los botones y contenidos
-                tabButtons.forEach(btn => btn.classList.remove('tabs__button--active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('tab-content--active'));
+        // Listeners para las pestañas de los modales
+        const modalsWithTabs = document.querySelectorAll('.modal');
+        modalsWithTabs.forEach(modal => {
+            const tabs = modal.querySelectorAll('.tabs__button');
+            const tabContents = modal.querySelectorAll('.tab-content');
 
-                // Añadir clase activa al botón y contenido seleccionados
-                button.classList.add('tabs__button--active');
-                document.getElementById(`tab-${tab}`).classList.add('tab-content--active');
-            });
+            if (tabs.length > 0 && tabContents.length > 0) {
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // Dentro del modal actual, desactivar todas las pestañas y contenidos
+                        tabs.forEach(t => t.classList.remove('tabs__button--active'));
+                        tabContents.forEach(c => c.classList.remove('tab-content--active'));
+
+                        // Activar la pestaña y el contenido seleccionados
+                        tab.classList.add('tabs__button--active');
+                        const targetContentId = `tab-${tab.dataset.tab}`;
+                        const targetContent = modal.querySelector(`#${targetContentId}`);
+                        if (targetContent) {
+                            targetContent.classList.add('tab-content--active');
+                        }
+                    });
+                });
+            }
         });
 
         document.getElementById('newReasonBtn').addEventListener('click', () => toggleNestedForm('newReasonForm', true));
@@ -461,8 +468,10 @@
             // Resetear formularios al abrir
             if (modalId === 'transactionModal') DOMElements.transactionForm.reset();
             if (modalId === 'budgetModal') DOMElements.budgetForm.reset();
-            if (modalId === 'workspaceModal') DOMElements.workspaceForm.reset();
-            if (modalId === 'shareModal') DOMElements.shareForm.reset();
+            if (modalId === 'manageWorkspacesModal') {
+                DOMElements.workspaceForm.reset();
+                DOMElements.shareForm.reset();
+            }
 
             // Caso especial para el modal de búsqueda
             if (modalId === 'searchModal') {
@@ -798,7 +807,7 @@
                 // Limpiar el campo de texto
                 workspaceNameInput.value = '';
                 // Cerrar el modal
-                toggleModal('workspaceModal', false);
+                toggleModal('manageWorkspacesModal', false);
                 // Mostrar notificación de éxito
                 showNotification(`Espacio "${workspaceName}" creado con éxito`, 'success');
                 // Actualizar la lista de espacios de trabajo en la UI
@@ -855,7 +864,7 @@
                 // Limpiar campos y cerrar modal
                 DOMElements.shareWorkspaceSelect.value = '';
                 emailInput.value = '';
-                toggleModal('shareModal', false);
+                toggleModal('manageWorkspacesModal', false);
                 showNotification(`Invitación enviada a ${email} para el espacio de trabajo.`, 'success');
             } else {
                 throw new Error('Error al compartir el espacio de trabajo.');

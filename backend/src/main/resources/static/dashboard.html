@@ -88,11 +88,8 @@
             <select id="workspaceSelect" class="workspace-selector__select">
                 <option value="campo-nuevo">Seleccionar espacio de trabajo</option>
             </select>
-            <button id="newWorkspaceBtn" class="workspace-selector__btn">
-                <i class="fas fa-plus"></i> Nuevo espacio
-            </button>
-            <button id="shareWorkspaceBtn" class="workspace-selector__btn">
-                <i class="fas fa-share-alt"></i> Compartir espacio
+            <button id="manageWorkspacesBtn" class="btn btn--secondary">
+                <i class="fas fa-folder-open"></i> Espacios de trabajo
             </button>
         </div>
     </section>
@@ -442,60 +439,58 @@
         </div>
     </div>
 
-    <!-- Modal: Nuevo Espacio de Trabajo -->
-    <div id="workspaceModal" class="modal" hidden>
+    <!-- Modal: Administración de Espacios de Trabajo -->
+    <div id="manageWorkspacesModal" class="modal" hidden>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title">Nuevo espacio de trabajo</h2>
-                <button id="closeWorkspaceModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                <h2 class="modal__title">Administración de espacios de trabajo</h2>
+                <button id="closeManageWorkspacesModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal__body">
-                <form id="workspaceForm" class="form">
-                    <div class="form__group">
-                        <label for="workspaceName" class="form__label">Nombre del espacio</label>
-                        <div class="form__input-container">
-                            <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
-                            <span id="workspaceNameError" class="form__error-message" hidden>*</span>
-                        </div>
-                    </div>
-                    <div class="form__actions">
-                        <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
-                        <button type="submit" class="btn btn--primary">Guardar espacio</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                <div class="tabs">
+                    <button class="tabs__button tabs__button--active" data-tab="new-workspace">Nuevo espacio</button>
+                    <button class="tabs__button" data-tab="share-workspace">Compartir espacio</button>
+                </div>
 
-    <!-- Modal: Compartir Espacio de Trabajo -->
-    <div id="shareModal" class="modal" hidden>
-        <div class="modal__content">
-            <div class="modal__header">
-                <h2 class="modal__title">Compartir espacio de trabajo</h2>
-                <button id="closeShareModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal__body">
-                <form id="shareForm" class="form">
-                    <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
-                    <div class="form__group">
-                        <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
-                        <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
-                            <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
-                        </select>
-                    </div>
-                    <div class="form__group">
-                        <label for="shareEmail" class="form__label">Email del invitado</label>
-                        <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
-                    </div>
-                    <div class="form__actions">
-                        <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
-                        <button type="submit" class="btn btn--primary">Enviar invitación</button>
-                    </div>
-                </form>
+                <!-- Contenido de Nuevo Espacio -->
+                <div id="tab-new-workspace" class="tab-content tab-content--active">
+                    <form id="workspaceForm" class="form">
+                        <div class="form__group">
+                            <label for="workspaceName" class="form__label">Nombre del espacio</label>
+                            <div class="form__input-container">
+                                <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
+                                <span id="workspaceNameError" class="form__error-message" hidden>*</span>
+                            </div>
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Guardar espacio</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contenido de Compartir Espacio -->
+                <div id="tab-share-workspace" class="tab-content">
+                    <form id="shareForm" class="form">
+                        <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
+                        <div class="form__group">
+                            <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
+                            <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
+                                <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form__group">
+                            <label for="shareEmail" class="form__label">Email del invitado</label>
+                            <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Enviar invitación</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
