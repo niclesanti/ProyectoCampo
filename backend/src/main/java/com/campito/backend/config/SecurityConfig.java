@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo
                     .oidcUserService(customOidcUserService)
                 )
-                .defaultSuccessUrl("/dashboard.html", true)
+                .defaultSuccessUrl("/dashboard.html")
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
