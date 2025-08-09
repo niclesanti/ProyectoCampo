@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAMPITO - Dashboard</title>
-    <meta name="description" content="Dashboard de gestión para CAMPITO.">
+    <title>Campito - Dashboard</title>
+    <meta name="description" content="Dashboard de gestión para Campito.">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#3B82F6">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,7 +28,7 @@
             </div>
             <div class="side-menu__brand">
                 <img src="/logo_login.png" alt="Logo CAMPITO" class="side-menu__logo-img">
-                <span class="side-menu__title">CAMPITO</span>
+                <span class="side-menu__title">Campito</span>
             </div>
             <nav class="side-menu__nav">
                 <a href="#" class="side-menu__nav-link side-menu__nav-link--active">
@@ -88,11 +88,8 @@
             <select id="workspaceSelect" class="workspace-selector__select">
                 <option value="campo-nuevo">Seleccionar espacio de trabajo</option>
             </select>
-            <button id="newWorkspaceBtn" class="workspace-selector__btn">
-                <i class="fas fa-plus"></i> Nuevo espacio
-            </button>
-            <button id="shareWorkspaceBtn" class="workspace-selector__btn">
-                <i class="fas fa-share-alt"></i> Compartir espacio
+            <button id="manageWorkspacesBtn" class="btn btn--secondary">
+                <i class="fas fa-folder-open"></i> Espacios de trabajo
             </button>
         </div>
     </section>
@@ -143,16 +140,16 @@
         <!-- Acciones Rápidas -->
         <section class="quick-actions" aria-label="Acciones rápidas">
             <button id="newTransactionBtn" class="btn btn--primary">
-                <i class="fas fa-plus"></i>
-                Nueva transacción
+                <i class="fas fa-dollar-sign"></i>
+                Movimientos de dinero
             </button>
             <button id="searchTransactionsBtn" class="btn btn--secondary">
                 <i class="fas fa-search"></i>
-                Buscar transacciones
+                Ver movimientos
             </button>
             <button id="setupAlertsBtn" class="btn btn--secondary">
                 <i class="fas fa-bell"></i>
-                Configurar alertas
+                Alertas
             </button>
         </section>
 
@@ -185,12 +182,12 @@
                 </div>
             </div>
 
-            <!-- Transacciones Recientes -->
+            <!-- Movimientos Recientes -->
             <div class="card card--transactions-list">
                 <div class="card__header">
-                    <h3 id="transactions-title" class="card__title">Transacciones recientes</h3>
+                    <h3 id="transactions-title" class="card__title">Movimientos recientes</h3>
                     <button id="viewAllTransactionsBtn" class="btn btn--text">
-                        Ver todas
+                        Ver todos
                     </button>
                 </div>
                 <div id="recentTransactionsList" class="transactions-list">
@@ -200,11 +197,11 @@
         </section>
     </main>
 
-    <!-- Modal: Nueva Transacción -->
+    <!-- Modal: Movimientos de dinero -->
     <div id="transactionModal" class="modal" hidden>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title">Nueva transacción</h2>
+                <h2 class="modal__title">Movimientos de dinero</h2>
                 <button id="closeTransactionModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
                     <i class="fas fa-times"></i>
                 </button>
@@ -218,6 +215,7 @@
                 <!-- Contenido de Gasto/Ingreso -->
                 <div id="tab-gasto-ingreso" class="tab-content tab-content--active">
                     <form id="transactionForm" class="form">
+                        <p class="form__subtitle">Anotar un nueva salida o ingreso de dinero con todos sus detalles.</p>
                         <div class="form__group">
                             <label for="transactionType" class="form__label">Tipo</label>
                             <select id="transactionType" name="transactionType" class="form__select" required>
@@ -302,7 +300,7 @@
                         </div>
                         <div class="form__actions">
                             <button type="button" id="cancelTransactionBtn" class="btn btn--secondary">Cancelar</button>
-                            <button type="submit" class="btn btn--primary">Guardar transacción</button>
+                            <button type="submit" class="btn btn--primary">Guardar</button>
                         </div>
                     </form>
                 </div>
@@ -310,6 +308,7 @@
                 <!-- Contenido de Movimiento entre cuentas -->
                 <div id="tab-transferencia" class="tab-content">
                     <form id="transferForm" class="form">
+                        <p class="form__subtitle">Anotar que realizaste un movimiento de dinero entre dos cuentas bancarias registradas en el sistema.</p>
                         <div class="form__group">
                             <label for="transferSourceAccount" class="form__label">Cuenta de origen</label>
                             <select id="transferSourceAccount" name="transferSourceAccount" class="form__select" required>
@@ -328,7 +327,7 @@
                         </div>
                         <div class="form__actions">
                             <button type="button" id="cancelTransferBtn" class="btn btn--secondary">Cancelar</button>
-                            <button type="submit" class="btn btn--primary">Realizar transferencia</button>
+                            <button type="submit" class="btn btn--primary">Realizar movimiento</button>
                         </div>
                     </form>
                 </div>
@@ -336,17 +335,18 @@
         </div>
     </div>
 
-    <!-- Modal: Buscar Transacciones -->
+    <!-- Modal: Ver Movimientos -->
     <div id="searchModal" class="modal" hidden>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title">Buscar transacciones</h2>
+                <h2 class="modal__title">Ver movimientos</h2>
                 <button id="closeSearchModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal__body">
                 <form id="searchForm" class="form">
+                    <p class="form__subtitle">Buscar movimientos de dinero registrados anteriormente. Todos los campos de búsqueda son opcionales. Excepción: si ingresas un "mes" debes especificar su "año".</p>
                     <div class="form__group--grid">
                         <div class="form__group">
                             <label for="searchMonth" class="form__label">Mes</label>
@@ -386,7 +386,7 @@
                             <label for="orderBy" class="form__label">Ordenar por</label>
                             <select id="orderBy" name="orderBy" class="form__select">
                                 <option value="date-desc">Fecha (más recientes)</option>
-                                <option value="date-asc">Fecha (más antiguas)</option>
+                                <option value="date-asc">Fecha (más antiguos)</option>
                                 <option value="amount-desc">Monto (mayor a menor)</option>
                                 <option value="amount-asc">Monto (menor a mayor)</option>
                             </select>
@@ -417,6 +417,7 @@
             </div>
             <div class="modal__body">
                 <form id="budgetForm" class="form">
+                    <p class="form__subtitle">Crear una alerta definiendo un motivo y un límite umbral. Cuando el gasto en este motivo supere el umbral será notificado.</p>
                     <div class="form__group">
                         <label for="budgetReason" class="form__label">Motivo</label>
                         <select id="budgetReason" name="budgetReason" class="form__select" required>
@@ -442,60 +443,59 @@
         </div>
     </div>
 
-    <!-- Modal: Nuevo Espacio de Trabajo -->
-    <div id="workspaceModal" class="modal" hidden>
+    <!-- Modal: Administración de Espacios de Trabajo -->
+    <div id="manageWorkspacesModal" class="modal" hidden>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title">Nuevo espacio de trabajo</h2>
-                <button id="closeWorkspaceModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
+                <h2 class="modal__title">Administración de espacios de trabajo</h2>
+                <button id="closeManageWorkspacesModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal__body">
-                <form id="workspaceForm" class="form">
-                    <div class="form__group">
-                        <label for="workspaceName" class="form__label">Nombre del espacio</label>
-                        <div class="form__input-container">
-                            <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
-                            <span id="workspaceNameError" class="form__error-message" hidden>*</span>
-                        </div>
-                    </div>
-                    <div class="form__actions">
-                        <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
-                        <button type="submit" class="btn btn--primary">Guardar espacio</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                <div class="tabs">
+                    <button class="tabs__button tabs__button--active" data-tab="new-workspace">Nuevo espacio</button>
+                    <button class="tabs__button" data-tab="share-workspace">Compartir espacio</button>
+                </div>
 
-    <!-- Modal: Compartir Espacio de Trabajo -->
-    <div id="shareModal" class="modal" hidden>
-        <div class="modal__content">
-            <div class="modal__header">
-                <h2 class="modal__title">Compartir espacio de trabajo</h2>
-                <button id="closeShareModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal__body">
-                <form id="shareForm" class="form">
-                    <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver y registrar transacciones.</p>
-                    <div class="form__group">
-                        <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
-                        <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
-                            <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
-                        </select>
-                    </div>
-                    <div class="form__group">
-                        <label for="shareEmail" class="form__label">Email del invitado</label>
-                        <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
-                    </div>
-                    <div class="form__actions">
-                        <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
-                        <button type="submit" class="btn btn--primary">Enviar invitación</button>
-                    </div>
-                </form>
+                <!-- Contenido de Nuevo Espacio -->
+                <div id="tab-new-workspace" class="tab-content tab-content--active">
+                    <form id="workspaceForm" class="form">
+                        <p class="form__subtitle">Crear un nuevo espacio de trabajo donde puedes registrar todos tus movimientos de dinero y realizar diferentes análisis de datos.</p>
+                        <div class="form__group">
+                            <label for="workspaceName" class="form__label">Nombre del espacio</label>
+                            <div class="form__input-container">
+                                <input type="text" id="workspaceName" name="workspaceName" class="form__input" placeholder="Ej: Campo nuevo" required maxlength="50">
+                                <span id="workspaceNameError" class="form__error-message" hidden>*</span>
+                            </div>
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelWorkspaceBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Guardar espacio</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contenido de Compartir Espacio -->
+                <div id="tab-share-workspace" class="tab-content">
+                    <form id="shareForm" class="form">
+                        <p class="form__subtitle">Comparte un espacio de trabajo con otra persona para que pueda ver, anotar movimientos de dinero y realizar diferentes análisis de datos.</p>
+                        <div class="form__group">
+                            <label for="shareWorkspaceSelect" class="form__label">Espacio de trabajo</label>
+                            <select id="shareWorkspaceSelect" name="shareWorkspaceSelect" class="form__select" required>
+                                <!-- Opciones de espacios de trabajo se llenarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form__group">
+                            <label for="shareEmail" class="form__label">Email del invitado</label>
+                            <input type="email" id="shareEmail" name="shareEmail" class="form__input" placeholder="invitado@example.com" required maxlength="100">
+                        </div>
+                        <div class="form__actions">
+                            <button type="button" id="cancelShareBtn" class="btn btn--secondary">Cancelar</button>
+                            <button type="submit" class="btn btn--primary">Enviar invitación</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -503,11 +503,11 @@
     <!-- Contenedor para Notificaciones -->
     <div id="notification-container" class="notification-container"></div>
 
-    <!-- Modal: Detalle de Transacción -->
+    <!-- Modal: Detalle del movimiento -->
     <div id="transactionDetailModal" class="modal" hidden>
         <div class="modal__content">
             <div class="modal__header">
-                <h2 class="modal__title">Detalle de la transacción</h2>
+                <h2 class="modal__title">Detalle del movimiento</h2>
                 <button id="closeTransactionDetailModalBtn" class="modal__close-btn" aria-label="Cerrar modal">
                     <i class="fas fa-times"></i>
                 </button>
