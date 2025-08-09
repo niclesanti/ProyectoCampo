@@ -71,6 +71,21 @@
         transactionDetailContent: document.getElementById('transactionDetailContent'),
     };
 
+    /**
+     * Parsea una fecha en formato UTC (ej: '2025-08-05T00:00:00Z')
+     * y la ajusta para evitar el problema de la zona horaria,
+     * mostrando la fecha como si fuera local.
+     * @param {string} dateString - La fecha en formato string desde el backend.
+     * @returns {Date} Un objeto Date ajustado.
+     */
+    function parseUTCDate(dateString) {
+        if (!dateString) return null;
+        const date = new Date(dateString);
+        // Ajusta la fecha sumándole el offset de la zona horaria del navegador en minutos.
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+        return date;
+    }
+
     function initializeApp() {
         loadSampleData();
         setupEventListeners();
@@ -351,7 +366,7 @@
             <div class="transaction-item__info">
                 <div class="transaction-item__details">
                     <span class="transaction-item__reason">${transaction.reason}</span>
-                    <span class="transaction-item__meta">${new Date(transaction.date).toLocaleDateString('es-AR')} &bull; ${transaction.recipient || 'N/A'}</span>
+                    <span class="transaction-item__meta">${parseUTCDate(transaction.date).toLocaleDateString('es-AR')} &bull; ${transaction.recipient || 'N/A'}</span>
                 </div>
             </div>
             <div class="transaction-item__amount ${isIncome ? 'transaction-item__amount--income' : 'transaction-item__amount--expense'}">
@@ -651,7 +666,7 @@
         const content = DOMElements.transactionDetailContent;
         const isIncome = transaction.type === 'income';
 
-        const formattedDate = new Date(transaction.date).toLocaleDateString('es-AR', {
+        const formattedDate = parseUTCDate(transaction.date).toLocaleDateString('es-AR', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
@@ -1289,8 +1304,8 @@
         const order = DOMElements.orderBySelect.value;
         let sorted = [...appState.lastSearchResults];
         switch (order) {
-            case 'date-asc': sorted.sort((a, b) => new Date(a.date) - new Date(b.date)); break;
-            case 'date-desc': sorted.sort((a, b) => new Date(b.date) - new Date(a.date)); break;
+            case 'date-asc': sorted.sort((a, b) => parseUTCDate(a.date) - parseUTCDate(b.date)); break;
+            case 'date-desc': sorted.sort((a, b) => parseUTCDate(b.date) - parseUTCDate(a.date)); break;
             case 'amount-asc': sorted.sort((a, b) => a.amount - b.amount); break;
             case 'amount-desc': sorted.sort((a, b) => b.amount - a.amount); break;
         }
