@@ -786,6 +786,13 @@
             console.error('Error:', error);
             showNotification(error.message, 'error');
             DOMElements.searchResultsContainer.innerHTML = '<p class="transactions-list__empty">Error al cargar los resultados.</p>';
+            // Resetear totales en caso de error
+            const totalIngresosEl = document.getElementById('total-ingresos');
+            const totalGastosEl = document.getElementById('total-gastos');
+            if (totalIngresosEl && totalGastosEl) {
+                totalIngresosEl.textContent = '0,00';
+                totalGastosEl.textContent = '0,00';
+            }
         });
     }
 
@@ -1258,6 +1265,14 @@
         DOMElements.searchForm.reset();
         DOMElements.searchResultsContainer.innerHTML = '';
         appState.lastSearchResults = [];
+
+        // Resetear totales
+        const totalIngresosEl = document.getElementById('total-ingresos');
+        const totalGastosEl = document.getElementById('total-gastos');
+        if (totalIngresosEl && totalGastosEl) {
+            totalIngresosEl.textContent = '0,00';
+            totalGastosEl.textContent = '0,00';
+        }
     }
 
     function showAllTransactions() {
@@ -1310,6 +1325,26 @@
             case 'amount-desc': sorted.sort((a, b) => b.amount - a.amount); break;
         }
         renderTransactionList(DOMElements.searchResultsContainer, sorted);
+
+        // Calcular y mostrar los totales
+        let totalIngresos = 0;
+        let totalGastos = 0;
+
+        sorted.forEach(transaction => {
+            if (transaction.type === 'income') {
+                totalIngresos += transaction.amount;
+            } else if (transaction.type === 'expense') {
+                totalGastos += transaction.amount;
+            }
+        });
+
+        const totalIngresosEl = document.getElementById('total-ingresos');
+        const totalGastosEl = document.getElementById('total-gastos');
+
+        if (totalIngresosEl && totalGastosEl) {
+            totalIngresosEl.textContent = totalIngresos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            totalGastosEl.textContent = totalGastos.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
     }
 
     function showNotification(message, type = 'info') {

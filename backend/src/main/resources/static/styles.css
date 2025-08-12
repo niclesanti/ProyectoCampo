@@ -1379,3 +1379,39 @@ body {
 
     
 }
+
+/* Estilos para los totales de búsqueda en el modal */
+.search-totals {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column; /* Apilar verticalmente */
+    align-items: flex-end;   /* Alinear a la derecha */
+    gap: 0.5rem; /* Espacio entre los items */
+}
+
+.search-totals__item {
+    display: flex;
+    gap: 0.5rem; /* Espacio entre etiqueta y valor */
+    align-items: baseline; /* Alinear por la base del texto */
+}
+
+.search-totals__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.search-totals__value {
+    font-size: 0.9rem; /* Mismo tamaño que la etiqueta */
+    font-weight: 700;
+}
+
+#total-ingresos {
+    color: var(--color-text-saldo-positivo);
+}
+
+#total-gastos {
+    color: var(--color-text-saldo-negativo);
+}
