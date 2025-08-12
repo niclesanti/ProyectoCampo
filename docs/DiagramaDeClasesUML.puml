@@ -1,49 +1,50 @@
 @startuml DiagramaDeClasesUML
 
-'DEFINICION DE CLASES DEL MODELO
+' DEFINICION DE CLASES DEL MODELO
 class Usuario {
-    - id: Long
-    - nombre: String
-    - email: String
-    - fotoPerfil: String
-    - proveedor: String
-    - idProveedor: String
-    - rol: String
-    - activo: Boolean
-    - fechaRegistro: LocalDateTime
-    - fechaUltimoAcceso: LocalDateTime
-}
-
-class Transaccion {
-    - id: Long
-    - tipo: TipoTransaccion
-    - monto: Float
-    - fecha: LocalDate
-    - descripcion: String
-    - nombreCompletoAuditoria: String
-    - fechaCreacion: LocalDateTime
-}
-
-class MotivoTransaccion {
-    - id: Long
-    - motivo: String
-}
-
-'Puede ser el emisor o receptor de una transferencia
-class ContactoTransferencia {
-    - id: Long
-    - nombre: String
-}
-
-enum TipoTransaccion {
-    INGRESO
-    GASTO
+  - id: Long
+  - nombre: String
+  - email: String
+  - fotoPerfil: String
+  - proveedor: ProveedorAutenticacion
+  - idProveedor: String
+  - rol: String
+  - activo: Boolean
+  - fechaRegistro: LocalDateTime
+  - fechaUltimoAcceso: LocalDateTime
 }
 
 class EspacioTrabajo {
-    - id: Long
-    - nombre: String
-    - saldo: Float
+  - id: Long
+  - nombre: String
+  - saldo: Float
+}
+
+class CuentaBancaria {
+  - id: Long
+  - nombre: String
+  - entidadFinanciera: String
+  - saldoActual: Float
+}
+
+class Transaccion {
+  - id: Long
+  - tipo: TipoTransaccion
+  - monto: Float
+  - fecha: LocalDate
+  - descripcion: String
+  - nombreCompletoAuditoria: String
+  - fechaCreacion: LocalDateTime
+}
+
+class MotivoTransaccion {
+  - id: Long
+  - motivo: String
+}
+
+class ContactoTransferencia {
+  - id: Long
+  - nombre: String
 }
 
 class Presupuesto {
@@ -54,100 +55,131 @@ class Presupuesto {
     - umbralAlerta: Float
 }
 
-'ASOCIACIONES DE CLASES DE MODELO
-Usuario "1" -- "0..*" EspacioTrabajo : gestiona >
-Usuario "0..*" -- "0..*" EspacioTrabajo : participa >
-Transaccion "0..*" -- "1" EspacioTrabajo : pertenece >
-Transaccion "0..*" -- "1" MotivoTransaccion : tiene >
-Transaccion "0..*" -- "1" ContactoTransferencia : tiene >
-Presupuesto "0..*" -- "1" EspacioTrabajo : asignado a >
-Presupuesto "0..*" -- "0..1" motivoTransaccion : relacionado con >
-ContactoTransferencia "0..*" -- "1" EspacioTrabajo : pertenece >
-MotivoTransaccion "0..*" -- "1" EspacioTrabajo : pertenece >
-
-'DEFINICION DE GESTORES
-interface IUsuarioService <<service>> {
-    + registrarUsuario(): void
-    + iniciarSesion(): Boolean
-    + asignarEspacioTrabajo(): void
-}
-class UsuarioServiceImpl <<service>> {
-    + registrarUsuario(): void
-    + iniciarSesion(): Boolean
-    + asignarEspacioTrabajo(): void
+enum TipoTransaccion {
+  INGRESO
+  GASTO
 }
 
-interface ITransaccionesService <<service>> {
-    + registrarTransaccion(): void
-    + removerTransaccion(): void
-    + buscarTransaccion(): List<Transaccion>
-    + registrarContactoTransferencia(): void
-    + nuevoMotivoTransaccion(): void
+enum ProveedorAutenticacion {
+  GOOGLE
+  FACEBOOK
+  GITHUB
 }
-class TransaccionesServiceImpl <<service>> {
-    + nuevaTransaccion(): void
-    + removerTransaccion(): void
-    + buscarTransaccion(): List<Transaccion>
-    + registrarContactoTransferencia(): void
-    + nuevoMotivoTransaccion(): void
+
+' ASOCIACIONES DE CLASES DE MODELO
+Usuario "1" -- "0..*" EspacioTrabajo : "es admin de"
+Usuario "0..*" -- "0..*" EspacioTrabajo : "participa en"
+EspacioTrabajo "1" -- "0..*" CuentaBancaria : "tiene"
+EspacioTrabajo "1" -- "0..*" Transaccion : "registra"
+EspacioTrabajo "1" -- "0..*" MotivoTransaccion : "define"
+EspacioTrabajo "1" -- "0..*" ContactoTransferencia : "registra"
+EspacioTrabajo "1" -- "0..*" Presupuesto : "asigna"
+
+Transaccion "0..*" -- "1" MotivoTransaccion : "tiene un"
+Transaccion "0..*" -- "0..1" ContactoTransferencia : "asociada a un"
+Transaccion "0..*" -- "0..1" CuentaBancaria : "afecta a"
+
+Presupuesto "1" -- "0..1" MotivoTransaccion : "relacionado con"
+
+
+' DEFINICION DE CONTROLADORES
+
+interface EspacioTrabajoController <<controller>> {
+    + registrarEspacioTrabajo(): ResponseEntity<Void>
+    + compartirEspacioTrabajo(): ResponseEntity<Void>
+    + listarEspaciosTrabajoPorUsuario(): ResponseEntity<List<EspacioTrabajoListadoDTO>>
 }
-interface IEspacioTrabajoService <<service>> {
-    + crearEspacioTrabajo(): void
-    + actualizarEspacioTrabajo(): void
-    + eliminarEspacioTrabajo(): void
-    + obtenerEspacioTrabajo(): EspacioTrabajo
+
+interface CuentaBancariaController <<controller>> {
+    + crearCuentaBancaria(): ResponseEntity<Void>
+    + listarCuentasBancarias(): ResponseEntity<List<CuentaBancariaListadoDTO>>
+    + realizarTransaccion(): ResponseEntity<Void>
+}
+
+interface TransaccionController <<controller>> {
+    + registrarTransaccion(): ResponseEntity<TransaccionDTO>
+    + removerTransaccion(): ResponseEntity<Void>
+    + buscarTransaccion(): ResponseEntity<List<TransaccionListadoDTO>>
+    + registrarContactoTransferencia(): ResponseEntity<ContactoDTO>
+    + listarContactos(): ResponseEntity<List<ContactoListadoDTO>>
+    + nuevoMotivoTransaccion(): ResponseEntity<MotivoDTO>
+    + listarMotivos(): ResponseEntity<List<MotivoListadoDTO>>
+    + buscarTransaccionesRecientes(): ResponseEntity<List<TransaccionListadoDTO>>
+    + obtenerDashboardInfo(): ResponseEntity<DashboardInfoDTO>
+}
+
+' DEFINICION DE SERVICIOS
+interface EspacioTrabajoService <<service>> {
+    + registrarEspacioTrabajo(): void
     + compartirEspacioTrabajo(): void
+    + listarEspaciosTrabajoPorUsuario(): List<EspacioTrabajoListadoDTO>
 }
-class EspacioTrabajoServiceImpl <<service>> {
-    + crearEspacioTrabajo(): void
-    + actualizarEspacioTrabajo(): void
-    + eliminarEspacioTrabajo(): void
-    + obtenerEspacioTrabajo(): EspacioTrabajo
-    + compartirEspacioTrabajo(): void
+class EspacioTrabajoServiceImpl <<service>>
+
+interface CuentaBancariaService <<service>> {
+    + crearCuentaBancaria(): void
+    + actualizarCuentaBancaria(): CuentaBancaria
+    + listarCuentasBancarias(): List<CuentaBancariaListadoDTO>
+    + transaccionEntreCuentas(): void
 }
+class CuentaBancariaServiceImpl <<service>>
 
-'ASOCIACIONES DE GESTORES
-UsuarioServiceImpl ..> Usuario : usa
-UsuarioServiceImpl ..> EspacioTrabajo : usa
-UsuarioServiceImpl --|> IUsuarioService : implementa
-TransaccionesServiceImpl ..> Transaccion : usa
-TransaccionesServiceImpl ..> MotivoTransaccion : usa
-TransaccionesServiceImpl ..> ContactoTransferencia : usa
-TransaccionesServiceImpl --|> ITransaccionesService : implementa
-EspacioTrabajoServiceImpl ..> EspacioTrabajo : usa
-EspacioTrabajoServiceImpl --|> IEspacioTrabajoService : implementa
-
-
-'DEFINICION DE PATRON REPOSITORIO
-interface UsuarioRepository <<repository>> {
+interface TransaccionService <<service>> {
+    + registrarTransaccion(): TransaccionDTO
+    + removerTransaccion(): void
+    + buscarTransaccion(): List<TransaccionListadoDTO>
+    + registrarContactoTransferencia(): ContactoDTO
+    + nuevoMotivoTransaccion(): MotivoDTO
+    + listarContactos(): List<ContactoListadoDTO>
+    + listarMotivos(): List<MotivoListadoDTO>
+    + buscarTransaccionesRecientes(): List<TransaccionListadoDTO>
+    + obtenerDashboardInfo(): DashboardInfoDTO
 }
+class TransaccionServiceImpl <<service>>
 
-interface TransaccionRepository <<repository>> {
-}
+' DEFINICION DE REPOSITORIOS
+interface UsuarioRepository <<repository>>
+interface EspacioTrabajoRepository <<repository>>
+interface CuentaBancariaRepository <<repository>>
+interface TransaccionRepository <<repository>>
+interface MotivoTransaccionRepository <<repository>>
+interface ContactoTransferenciaRepository <<repository>>
+interface DashboardRepository <<repository>>
 
-interface EspacioTrabajoRepository <<repository>> {
-}
+' ASOCIACIONES CAPA PRESENTACION -> SERVICIO
+EspacioTrabajoController ..> EspacioTrabajoService
+CuentaBancariaController ..> CuentaBancariaService
+TransaccionController ..> TransaccionService
 
-interface MotivoTransaccionRepository <<repository>> {
-}
+' ASOCIACIONES CAPA SERVICIO (IMPLEMENTACIONES)
+EspacioTrabajoServiceImpl ..|> EspacioTrabajoService
+CuentaBancariaServiceImpl ..|> CuentaBancariaService
+TransaccionServiceImpl ..|> TransaccionService
 
-interface ContactoTransferenciaRepository <<repository>> {
-}
+' ASOCIACIONES CAPA SERVICIO -> REPOSITORIO
+EspacioTrabajoServiceImpl ..> EspacioTrabajoRepository
+EspacioTrabajoServiceImpl ..> UsuarioRepository
+CuentaBancariaServiceImpl ..> CuentaBancariaRepository
+CuentaBancariaServiceImpl ..> EspacioTrabajoRepository
+TransaccionServiceImpl ..> TransaccionRepository
+TransaccionServiceImpl ..> EspacioTrabajoRepository
+TransaccionServiceImpl ..> MotivoTransaccionRepository
+TransaccionServiceImpl ..> ContactoTransferenciaRepository
+TransaccionServiceImpl ..> DashboardRepository
+TransaccionServiceImpl ..> CuentaBancariaRepository
+TransaccionServiceImpl ..> CuentaBancariaService
 
-'ASOCIACIONES DE REPOSITORIOS
-UsuarioRepository ..> Usuario : usa
-UsuarioServiceImpl ..> UsuarioRepository : usa
+' ASOCIACIONES CAPA REPOSITORIO -> MODELO
+UsuarioRepository ..> Usuario
+EspacioTrabajoRepository ..> EspacioTrabajo
+CuentaBancariaRepository ..> CuentaBancaria
+TransaccionRepository ..> Transaccion
+MotivoTransaccionRepository ..> MotivoTransaccion
+ContactoTransferenciaRepository ..> ContactoTransferencia
 
-TransaccionRepository ..> Transaccion : usa
-TransaccionServiceImpl ..> TransaccionRepository : usa
-
-EspacioTrabajoRepository ..> EspacioTrabajo : usa
-EspacioTrabajoServiceImpl ..> EspacioTrabajoRepository : usa
-
-MotivoTransaccionRepository ..> MotivoTransaccion : usa
-TransaccionServiceImpl ..> MotivoTransaccionRepository : usa
-
-ContactoTransferenciaRepository ..> ContactoTransferencia : usa
-TransaccionServiceImpl ..> ContactoTransferenciaRepository : usa
+' ASOCIACIONES CAPA SERVICIO -> MODELO
+EspacioTrabajoService ..> EspacioTrabajo
+CuentaBancariaService ..> CuentaBancaria
+TransaccionService ..> Transaccion
 
 @enduml
