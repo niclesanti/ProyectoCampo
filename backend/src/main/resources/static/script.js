@@ -1616,4 +1616,29 @@
         }
     }
 
+    /**
+     * Cambia dinámicamente el color de la barra superior del móvil.
+     * @param {string} color - El color en formato hexadecimal (ej: "#FFFFFF").
+     */
+    function updateThemeColor(color) {
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', color);
+        }
+    }
+
+    // Detectar la página actual y aplicar el color correspondiente
+    function applyThemeColorBasedOnPage() {
+        const currentPath = window.location.pathname;
+
+        if (currentPath.includes('login.html')) {
+            updateThemeColor('#F8FAFC'); // Fondo blanco para la pantalla de login
+        } else if (currentPath.includes('dashboard.html')) {
+            updateThemeColor('#3B82F6'); // Fondo celeste para el dashboard
+        }
+    }
+
+    // Ejecutar la lógica al cargar el DOM
+    window.addEventListener('DOMContentLoaded', applyThemeColorBasedOnPage);
+
 })();
