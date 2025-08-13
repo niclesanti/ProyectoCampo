@@ -1,7 +1,7 @@
 # 📈💰 Sistema de Gestión de Finanzas Personales
 
 ## 📖 Descripción General
-**Campito** es una aplicación web desarrollada con **Spring Boot** y **Java** que fue pensada para gestionar mis ingresos/gastos de dinero personales, como también gestionar, de manera simple y eficiente, las finanzas de mi grupo familiar que son productores ganaderos a pequeña escala.
+Esta aplicación web desarrollada con **Spring Boot** y **Java** fue pensada para gestionar mis ingresos/gastos de dinero personales, como también gestionar, de manera simple y eficiente, las finanzas de mi grupo familiar que son productores ganaderos a pequeña escala.
 El sistema centraliza información sobre **transacciones, presupuestos, espacios de trabajo y control de gastos/ingresos**, ofreciendo a los usuarios un **dashboard interactivo** para el análisis de datos.
 
 Este proyecto fue diseñado con un enfoque en **buenas prácticas de ingeniería de software** y aplicando todos los conceptos, conocimientos y técnicas aprendidos durante el curso de la carrera de Ingeniería en Sistemas de Información.
