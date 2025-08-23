@@ -401,7 +401,7 @@
 
     function createMonthlyChart() {
         const ctx = document.getElementById('monthlyChart').getContext('2d');
-        const data = { labels: [], datasets: [ { label: 'Ingresos', data: [], backgroundColor: '#3B82F6' }, { label: 'Gastos', data: [], backgroundColor: '#03324F' } ] };
+        const data = { labels: [], datasets: [ { label: 'Ingresos', data: [], backgroundColor: '#65548e' }, { label: 'Gastos', data: [], backgroundColor: '#20015d' } ] };
         appState.charts.monthly = new Chart(ctx, { type: 'bar', data, options: getChartOptions() });
     }
 
@@ -418,16 +418,16 @@
     }
 
     /**
-     * Genera una paleta de colores en una gama de azules y celestes.
+     * Genera una paleta de colores en una gama de púrpuras y lilas.
      * @param {number} count - El número de colores a generar.
      * @returns {string[]} Un array de colores en formato HSL.
      */
-    function generateBluePalette(count) {
+    function generatePurplePalette(count) {
         const colors = [];
-        const baseHue = 210; // Tono base para el azul
+        const baseHue = 270; // Tono base para el púrpura
         const saturation = 75; // Saturación constante para colores vibrantes
-        const startLightness = 30; // Comienza con un azul oscuro
-        const endLightness = 85;   // Termina con un celeste claro
+        const startLightness = 30; // Comienza con un púrpura oscuro (#20015d)
+        const endLightness = 85;   // Termina con un púrpura claro (#ebddfe)
         const step = count > 1 ? (endLightness - startLightness) / (count - 1) : 0;
 
         for (let i = 0; i < count; i++) {
@@ -439,7 +439,7 @@
 
     function createBalanceTrendChart() {
         const ctx = document.getElementById('balanceTrendChart').getContext('2d');
-        const data = { labels: [], datasets: [{ label: 'Saldo Acumulado', data: [], borderColor: '#03324F', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
+        const data = { labels: [], datasets: [{ label: 'Saldo Acumulado', data: [], borderColor: '#20015d', tension: 0.4, fill: true, backgroundColor: 'rgba(3, 50, 79, 0.1)' }] };
         appState.charts.balanceTrend = new Chart(ctx, { type: 'line', data, options: getChartOptions('line') });
     }
 
@@ -1446,7 +1446,7 @@
         chart.data.labels = labels;
         chart.data.datasets[0].data = porcentajes;
         // Generar nuevos colores para la cantidad actual de categorías
-        chart.data.datasets[0].backgroundColor = generateBluePalette(labels.length);
+        chart.data.datasets[0].backgroundColor = generatePurplePalette(labels.length);
         chart.update();
     }
 

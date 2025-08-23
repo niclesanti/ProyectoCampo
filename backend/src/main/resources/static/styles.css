@@ -37,14 +37,15 @@
 -------------------------------------------------------------------*/
 :root {
     /* Paleta de Colores Inspirada en una gama de azules */
-    --color-primary-blue: #3B82F6;
-    --color-primary-blue-dark: #03324F;
+    --color-primary-purple: #65548e;
+    --color-primary-purple-dark: #20015d;
+    --color-primary-purple-light: #ebddfe;
     --color-primary-green: #08a148;
     --color-accent-red: #EF4444;
     --color-conteiner-saldo: #ffffff;
 
     /* Colores de Fondo */
-    --color-bg-primary: #F8FAFC;
+    --color-bg-primary: #f6f3fa;
     --color-bg-secondary: #FFFFFF;
 
     /* Colores de Texto */
@@ -56,7 +57,7 @@
 
     /* Colores de Borde */
     --color-border: #E5E7EB;
-    --color-border-focus: #03324F;
+    --color-border-focus: #20015d;
 
     /* Sombras */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -106,12 +107,12 @@ body {
 /* Botones (.btn) */
 .btn {
     padding: 0 1.25rem;
-    border-radius: var(--border-radius-md);
+    border-radius: 50px; /* Extremos más redondeados */
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition-fast);
-    border: 1px solid transparent;
+    border: none;
     font-family: inherit;
     display: inline-flex;
     align-items: center;
@@ -122,29 +123,25 @@ body {
 }
 
 .btn--primary {
-    background-color: var(--color-primary-blue);
+    background-color: var(--color-primary-purple);
     color: var(--color-text-light);
-    box-shadow: var(--shadow-sm);
+    box-shadow: none;
 }
 
 .btn--primary:hover {
-    background-color: var(--color-primary-blue-dark);
+    background-color: var(--color-primary-purple-dark);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
 }
 
 .btn--secondary {
-    background-color: var(--color-bg-secondary);
-    color: var(--color-primary-blue);
-    border-color: var(--color-border);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--color-primary-purple-light);
+    color: var(--color-primary-purple);
+    box-shadow: none;
 }
 
 .btn--secondary:hover {
-    background-color: var(--color-bg-primary);
-    border-color: var(--color-primary-blue);
+    background-color: var(--color-bg-secondary);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
 }
 
 .btn--danger {
@@ -161,7 +158,7 @@ body {
 
 .btn--text {
     background: transparent;
-    color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
     border: none;
     padding: 0 0.75rem;
     font-weight: 500;
@@ -183,8 +180,8 @@ body {
     background-color: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
     padding: 1.25rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    border: none; /* Eliminar bordes */
     transition: var(--transition-fast);
 }
 
@@ -423,10 +420,10 @@ body {
 
 /* Encabezado (.header) */
 .header {
-    background: var(--color-primary-blue);
+    background: var(--color-primary-purple);
     color: var(--color-text-light);
     padding: 0.5rem 1rem; /* Padding reducido */
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm); /* Aplicar un sombreado más tenue */
 }
 
 .header__content {
@@ -626,7 +623,7 @@ body {
 }
 
 .workspace-selector__btn {
-    background-color: var(--color-primary-blue);
+    background-color: var(--color-primary-purple);
     color: var(--color-text-light);
     border: none;
     padding: 0 1.25rem;
@@ -645,9 +642,9 @@ body {
 }
 
 .workspace-selector__btn:hover {
-    background-color: var(--color-primary-blue-dark);
+    background-color: var(--color-primary-purple-dark);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Dashboard (.dashboard) */
@@ -676,14 +673,9 @@ body {
     color: var(--color-text-primary);
     position: relative;
     overflow: hidden;
-}
-
-.card--balance::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 0;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="g" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="1" fill="%23F1F5F9"/></pattern></defs><rect width="100%" height="100%" fill="url(%23g)"/></svg>');
+    background-image: none; /* Eliminar el fondo SVG */
+    border: none; /* Eliminar bordes */
+    box-shadow: var(--shadow-sm); /* Mantener un sombreado tenue */
 }
 
 .card--balance > * {
@@ -743,6 +735,11 @@ body {
     gap: 1.25rem;
 }
 
+.card--chart {
+    border: none; /* Eliminar bordes */
+    box-shadow: var(--shadow-sm); /* Mantener un sombreado tenue */
+}
+
 .card--chart canvas {
     width: 100% !important;
     height: 280px !important;
@@ -794,7 +791,7 @@ body {
 
 .account-item__balance {
     font-weight: 700;
-    color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
     margin-top: 0.25rem;
 }
 
@@ -834,8 +831,8 @@ body {
 }
 
 .tabs__button--active {
-    color: var(--color-primary-blue);
-    border-bottom-color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
+    border-bottom-color: var(--color-primary-purple);
 }
 
 .tab-content {
@@ -888,7 +885,7 @@ body {
 }
 
 .transaction-item__icon--income {
-    color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
 }
 
 .transaction-item__icon--expense {
@@ -977,7 +974,7 @@ body {
 }
 
 .alert-item__threshold {
-    color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
     font-weight: 600;
     margin-left: 0.4rem;
 }
@@ -1224,10 +1221,10 @@ body {
 }
 
 .side-menu__nav-link--active {
-    color: var(--color-primary-blue);
+    color: var(--color-primary-purple);
     font-weight: 600;
     background-color: var(--color-bg-primary);
-    border-left-color: var(--color-primary-blue);
+    border-left-color: var(--color-primary-purple);
 }
 
 .side-menu__nav-link i {
