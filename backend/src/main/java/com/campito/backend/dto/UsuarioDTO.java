@@ -5,12 +5,13 @@ import com.campito.backend.model.Usuario;
 public record UsuarioDTO(
     Long id,
     String nombre,
-    String email
+    String email,
+    String fotoPerfil
 ) {
     public static UsuarioDTO fromUsuario(Usuario usuario) {
         if (usuario == null) {
             return null;
         }
-        return new UsuarioDTO(usuario.getId(), usuario.getNombre(), usuario.getEmail());
+        return new UsuarioDTO(usuario.getId(), usuario.getNombre(), usuario.getEmail(), usuario.getFotoPerfil());
     }
 }
