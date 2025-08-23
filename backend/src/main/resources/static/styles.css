@@ -172,7 +172,7 @@ body {
 .btn--small {
     padding: 0 0.75rem;
     font-size: 0.8rem;
-    height: 32px;
+    height: var(--input-height); /* Ajustar altura para que coincida con los selectores */
 }
 
 /* Tarjetas (.card) */
