@@ -63,6 +63,7 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 6px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.1); /* Nueva sombra extra suave */
 
     /* Radios de Borde */
     --border-radius-sm: 4px;
@@ -245,9 +246,9 @@ body {
     width: 100%;
     font-size: 0.9rem;
     border-radius: var(--border-radius-sm);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-primary-purple);
     padding: 0 0.875rem;
-    background-color: var(--color-bg-primary);
+    background-color: var(--color-bg-secondary);
     transition: var(--transition-fast);
     outline: none;
     font-family: inherit;
@@ -606,9 +607,9 @@ body {
 .workspace-selector__select {
     flex-grow: 0;
     appearance: none;
-    background: var(--color-bg-secondary) url('data:image/svg+xml;utf8,<svg fill="%23343A40" height="18" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/1.1em auto;
+    background: var(--color-primary-purple-light) url('data:image/svg+xml;utf8,<svg fill="%23343A40" height="18" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.75rem center/1.1em auto;
     border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border);
+    border: none;
     padding: 0 2rem 0 0.875rem;
     font-size: 0.9rem;
     font-weight: 500;
@@ -616,6 +617,7 @@ body {
     transition: var(--transition-fast);
     min-width: 180px;
     height: var(--input-height);
+    box-shadow: var(--shadow-xs);
 }
 
 .workspace-selector__select:focus {
