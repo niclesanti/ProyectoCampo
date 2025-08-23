@@ -107,14 +107,19 @@
                 if (usuario) {
                     document.querySelector('.side-menu__username').textContent = usuario.nombre;
                     document.querySelector('.side-menu__email').textContent = usuario.email;
-                    appState.authenticatedUserId = usuario.id; // Guardar el ID del usuario
-                    loadWorkspacesForUser(appState.authenticatedUserId); // Cargar espacios de trabajo
+                    const profileImg = document.getElementById('userProfileImg');
+                    if (usuario.fotoPerfil && usuario.fotoPerfil.trim() !== '') {
+                        profileImg.src = usuario.fotoPerfil;
+                    } else {
+                        profileImg.src = '/default-profile.png'; // Imagen por defecto
+                    }
+                    profileImg.alt = `Foto de perfil de ${usuario.nombre}`; // Agregar texto alternativo
+                    appState.authenticatedUserId = usuario.id;
+                    loadWorkspacesForUser(appState.authenticatedUserId);
                 }
             })
             .catch(error => {
                 console.error('Error al cargar datos del usuario:', error);
-                // Opcional: redirigir al login si no se pueden obtener los datos
-                // window.location.href = '/login.html';
             });
     }
 
@@ -132,8 +137,8 @@
             })
             .then(workspaces => {
                 appState.workspaces = workspaces;
-                populateShareWorkspaceSelect(); // Actualizar el selector de compartir
-                populateMainWorkspaceSelect(); // Actualizar el selector principal del dashboard
+                populateShareWorkspaceSelect();
+                populateMainWorkspaceSelect();
             })
             .catch(error => {
                 console.error('Error al cargar espacios de trabajo:', error);
@@ -155,7 +160,6 @@
     }
 
     function loadSampleData() {
-        // Se elimina la carga de datos de ejemplo para que la lista inicie vacía.
         appState.transactions = [];
     }
 

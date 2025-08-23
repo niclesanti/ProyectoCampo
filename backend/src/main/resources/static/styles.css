@@ -68,6 +68,7 @@
     --border-radius-sm: 4px;
     --border-radius-md: 6px;
     --border-radius-lg: 10px;
+    --border-radius-full: 50%; /* Nuevo radio de borde completo */
 
     /* Transiciones */
     --transition-fast: all 0.2s ease-in-out;
@@ -1234,45 +1235,53 @@ body {
 }
 
 .side-menu__user-info {
-    margin-top: auto; /* Empuja la sección al final */
+    margin-top: auto;
+    display: flex;
+    flex-direction: column; /* Asegurar diseño vertical */
+    align-items: center; /* Centrar elementos horizontalmente */
+    justify-content: center; /* Centrar elementos verticalmente */
     padding: 1rem 1.5rem;
     background-color: var(--color-bg-primary);
     border-top: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
-.side-menu__user-details {
-    display: flex;
-    flex-direction: column;
+.side-menu__profile-img {
+    width: 50px; /* Ajustar tamaño de la imagen */
+    height: 50px; /* Ajustar tamaño de la imagen */
+    border-radius: var(--border-radius-full);
+    margin-bottom: 0.5rem; /* Espaciado entre la imagen y el texto */
 }
 
 .side-menu__username {
     font-weight: 600;
     font-size: 0.95rem;
     color: var(--color-text-primary);
+    text-align: center; /* Centrar texto */
+    margin-bottom: 0.25rem; /* Espaciado entre el nombre y el email */
 }
 
 .side-menu__email {
     font-size: 0.85rem;
     color: var(--color-text-secondary);
+    text-align: center; /* Centrar texto */
 }
 
 .side-menu__logout-btn {
-    background: transparent;
-    border: none;
-    color: var(--color-text-secondary);
-    font-size: 1.25rem;
-    cursor: pointer;
+    display: block;
+    margin-top: 0.5rem;
+    text-align: center;
+    width: 100%;
     padding: 0.5rem;
-    border-radius: 50%;
+    font-size: 0.9rem;
+    border-radius: 50px;
+    background-color: var(--color-primary-purple-light);
+    color: var(--color-primary-purple);
     transition: var(--transition-fast);
 }
 
 .side-menu__logout-btn:hover {
-    color: var(--color-accent-red);
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: var(--color-bg-secondary);
+    transform: translateY(-1px);
 }
 
 /* Detalle de Transacción en Modal */
