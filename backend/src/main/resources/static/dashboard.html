@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campito - Dashboard</title>
-    <meta name="description" content="Dashboard de gestión para Campito.">
+    <title>Finanzas - Dashboard</title>
+    <meta name="description" content="Dashboard de gestión de Finanzas.">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" id="theme-color-meta" content="#3B82F6">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,27 +27,26 @@
                 </button>
             </div>
             <div class="side-menu__brand">
-                <img src="/logo_login.png" alt="Logo CAMPITO" class="side-menu__logo-img">
-                <span class="side-menu__title">Campito</span>
+                <img src="/logo_login.png" alt="Logo Finanzas" class="side-menu__logo-img">
+                <span class="side-menu__title">Finanzas</span>
             </div>
             <nav class="side-menu__nav">
                 <a href="#" class="side-menu__nav-link side-menu__nav-link--active">
-                    <i class="fas fa-dollar-sign"></i>
-                    <span>Finanzas</span>
-                </a>
-                <a href="#" class="side-menu__nav-link">
-                    <i class="fas fa-tractor"></i>
-                    <span>Producción</span>
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Panel de datos</span>
                 </a>
             </nav>
             <div class="side-menu__user-info">
+                <img src="" alt="Foto de perfil" class="side-menu__profile-img" id="userProfileImg">
                 <div class="side-menu__user-details">
                     <span class="side-menu__username">Usuario Ejemplo</span>
                     <span class="side-menu__email">usuario@ejemplo.com</span>
                 </div>
-                <a href="/logout" class="side-menu__logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+                <div class="side-menu__logout-container">
+                    <a href="/logout" class="btn btn--secondary side-menu__logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                    </a>
+                </div>
             </div>
         </div>
     </aside>
@@ -61,7 +60,7 @@
                 </button>
             </div>
             <div class="header__center-section">
-                <img src="/logo.png" alt="Logo CAMPITO" class="header__logo-img">
+                <img src="/logo.png" alt="Logo Finanzas" class="header__logo-img">
             </div>
             <div class="header__right-section">
                 <div class="header__notifications">
