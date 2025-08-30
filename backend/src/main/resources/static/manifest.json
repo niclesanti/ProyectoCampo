@@ -1,6 +1,6 @@
 {
-  "name": "Campito",
-  "short_name": "Campito",
+  "name": "Finanzas",
+  "short_name": "Finanzas",
   "description": "App para la gestion de finanzas personales.",
   "start_url": "/",
   "scope": "/",
