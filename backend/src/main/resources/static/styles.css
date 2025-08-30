@@ -2,9 +2,9 @@
 
   [Master Stylesheet]
 
-  Project:      CAMPITO - Dashboard de Gestión
+  Project:      Finanzas - Dashboard de Gestión
   Version:      1.0
-  Author:       Gemini AI
+  Author:       Nicle Santiago
 
   [Table of Contents]
 
@@ -457,7 +457,7 @@ body {
 }
 
 .header__logo-img {
-    height: 36px;
+    height: 30px;
 }
 
 .header__icon-btn {
@@ -1054,7 +1054,7 @@ body {
     padding: 2rem;
     background-color: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-sm);
 }
 
 .login-header {
@@ -1146,7 +1146,7 @@ body {
     width: 280px;
     background-color: var(--color-bg-secondary);
     height: 100%;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-sm);
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
     display: flex;

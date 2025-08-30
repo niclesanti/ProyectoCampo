@@ -1,7 +1,7 @@
 /**
- * @file Script principal para el dashboard de CAMPITO.
+ * @file Script principal para el dashboard de Finanzas.
  * @description Maneja la lógica de la interfaz, interacciones de usuario, y visualización de datos.
- * @author Gemini AI
+ * @author Nicle Santiago
  * @version 1.0.1
  */
 
@@ -15,10 +15,7 @@
         contacts: [],
         bankAccounts: [],
         budgets: [],
-        workspaces: [
-            { id: 1, name: 'Campo en Guadalupe Norte' },
-            { id: 2, name: 'Campo Nuevo' },
-        ],
+        workspaces: [],
         charts: {
             monthly: null,
             expenses: null,
@@ -379,21 +376,6 @@
         `;
         item.addEventListener('click', () => showTransactionDetails(transaction.id));
         return item;
-    }
-
-    function getTransactionIcon(reason) {
-        const iconMap = {
-            'Venta de ganado': 'fas fa-cow',
-            'Venta de leche': 'fas fa-wine-bottle',
-            'Alimento para ganado': 'fas fa-seedling',
-            'Veterinario': 'fas fa-stethoscope',
-            'Compra de equipos': 'fas fa-tools',
-            'Mantenimiento': 'fas fa-wrench',
-            'Transporte': 'fas fa-truck',
-            'Impuestos': 'fas fa-file-invoice-dollar',
-            'Salarios': 'fas fa-users',
-        };
-        return iconMap[reason] || 'fas fa-ellipsis-h';
     }
 
     function initializeCharts() {
